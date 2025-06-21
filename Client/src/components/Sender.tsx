@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const Sender = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -20,8 +20,17 @@ export const Sender = () => {
     if (!socket) return;
     // Creating the offer
     const pc = new RTCPeerConnection();
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
+    pc.onnegotiationneeded = async () => {
+      console.log("Negotiation needed");
+      const offer = await pc.createOffer(); // sdp
+      await pc.setLocalDescription(offer);
+      socket?.send(
+        JSON.stringify({
+          type: "createOffer",
+          sdp: pc.localDescription,
+        })
+      );
+    };
 
     pc.onicecandidate = (event) => {
       console.log(event);
@@ -32,12 +41,6 @@ export const Sender = () => {
       }
     };
 
-    socket?.send(
-      JSON.stringify({
-        type: "createOffer",
-        sdp: pc.localDescription,
-      })
-    );
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type == "createAnswer") {
@@ -47,9 +50,21 @@ export const Sender = () => {
       }
     };
     setPC(pc);
+    getCameraStreamAndSend(pc);
   };
 
-  const getCameraStreamAndSend = (pc: RTCPeerConnection) => {};
+  const getCameraStreamAndSend = (pc: RTCPeerConnection) => {
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.play();
+      // this is wrong, should propogate via a component
+      document.body.appendChild(video);
+      stream.getTracks().forEach((track) => {
+        pc?.addTrack(track);
+      });
+    });
+  };
 
   return (
     <div>
