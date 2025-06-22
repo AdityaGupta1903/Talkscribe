@@ -5,9 +5,11 @@ import Peer from "peerjs";
 function Video() {
   const [peerId, setPeerId] = useState("");
   const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
-  const remoteVideoRef = useRef<any>(null);
-  const currentUserVideoRef = useRef<any>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const currentUserVideoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const peerInstance = useRef<any>(null);
+  const recordedChunks: Blob[] = [];
 
   useEffect(() => {
     const peer = new Peer();
@@ -17,48 +19,117 @@ function Video() {
     });
 
     peer.on("call", (call) => {
-      var getDisplayMedia = navigator.mediaDevices.getUserMedia;
-
-      getDisplayMedia({ audio: true, video: true }).then((mediaStream) => {
-        currentUserVideoRef.current.srcObject = mediaStream;
-        currentUserVideoRef.current.play();
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
+        currentUserVideoRef.current!.srcObject = mediaStream;
+        currentUserVideoRef.current!.play();
         call.answer(mediaStream);
-        call.on("stream", function (remoteStream) {
-          remoteVideoRef.current.srcObject = remoteStream;
-          remoteVideoRef.current.play();
+
+        call.on("stream", (remoteStream) => {
+          remoteVideoRef.current!.srcObject = remoteStream;
+          remoteVideoRef.current!.play();
+
+          startDrawingCanvas();
+          startRecordingMergedCanvas();
         });
       });
     });
 
     peerInstance.current = peer;
   }, []);
-  const call = (remotePeerId: any) => {
-    var getDisplayMedia = navigator.mediaDevices.getUserMedia;
 
-    getDisplayMedia({ audio: true, video: true }).then((mediaStream) => {
-      currentUserVideoRef.current.srcObject = mediaStream;
-      currentUserVideoRef.current.play();
+  const call = (remotePeerId: string) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
+      currentUserVideoRef.current!.srcObject = mediaStream;
+      currentUserVideoRef.current!.play();
 
       const call = peerInstance.current.call(remotePeerId, mediaStream);
 
-      call.on("stream", (remoteStream: any) => {
-        remoteVideoRef.current.srcObject = remoteStream;
-        remoteVideoRef.current.play();
+      call.on("stream", (remoteStream: MediaStream) => {
+        remoteVideoRef.current!.srcObject = remoteStream;
+        remoteVideoRef.current!.play();
+
+        startDrawingCanvas();
+        startRecordingMergedCanvas();
       });
     });
   };
 
+  const startDrawingCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const draw = () => {
+      if (currentUserVideoRef.current && remoteVideoRef.current) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(currentUserVideoRef.current, 0, 0, 320, 240); // Local on left
+        ctx.drawImage(remoteVideoRef.current, 320, 0, 320, 240); // Remote on right
+      }
+      requestAnimationFrame(draw);
+    };
+
+    draw();
+  };
+
+  const startRecordingMergedCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const canvasStream = canvas.captureStream(30); // 30 FPS
+    const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: "video/webm; codecs=vp9" });
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: "video/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "meeting-recording.webm";
+      a.click();
+    };
+
+    mediaRecorder.start();
+    console.log("Recording started");
+
+    setInterval(() => {
+      mediaRecorder.stop();
+      mediaRecorder.start();
+      console.log("Recording stopped");
+    }, 10000); // Record for 10 seconds (adjust as needed)
+  };
+
   return (
     <div className="App">
-      <h1>Current user id is {peerId}</h1>
-      <input type="text" value={remotePeerIdValue} onChange={(e) => setRemotePeerIdValue(e.target.value)} />
+      <h2>
+        📹 Your Peer ID: <strong>{peerId}</strong>
+      </h2>
+
+      <input
+        type="text"
+        value={remotePeerIdValue}
+        onChange={(e) => setRemotePeerIdValue(e.target.value)}
+        placeholder="Enter remote peer ID"
+      />
       <button onClick={() => call(remotePeerIdValue)}>Call</button>
-      <div>
-        <video ref={currentUserVideoRef} />
+
+      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+        <div>
+          <h4>Local Video</h4>
+          <video ref={currentUserVideoRef} autoPlay muted style={{ width: 320, height: 240 }} />
+        </div>
+        <div>
+          <h4>Remote Video</h4>
+          <video ref={remoteVideoRef} autoPlay style={{ width: 320, height: 240 }} />
+        </div>
       </div>
-      <div>
-        <video ref={remoteVideoRef} />
-      </div>
+
+      {/* Hidden canvas used for recording */}
+      <canvas ref={canvasRef} width={640} height={240} style={{ display: "none" }} />
     </div>
   );
 }
