@@ -35,9 +35,7 @@ export const Sender = () => {
     pc.onicecandidate = (event) => {
       console.log(event);
       if (event.candidate) {
-        socket.send(
-          JSON.stringify({ type: "iceCandidate", candidate: event.candidate })
-        );
+        socket.send(JSON.stringify({ type: "iceCandidate", candidate: event.candidate }));
       }
     };
 
@@ -54,8 +52,9 @@ export const Sender = () => {
   };
 
   const getCameraStreamAndSend = (pc: RTCPeerConnection) => {
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       const video = document.createElement("video");
+      video.setAttribute("allow", "autoplay");
       video.srcObject = stream;
       video.play();
       // this is wrong, should propogate via a component
