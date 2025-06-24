@@ -1,42 +1,36 @@
-import { WebSocketServer, WebSocket } from "ws";
+import "dotenv/config";
+import * as AWS from "aws-sdk";
 
-const wss = new WebSocketServer({ port: 8080 });
+AWS.config.update({ region: "us-west-2" });
 
-let senderSocket: null | WebSocket = null;
-let receiverSocket: null | WebSocket = null;
+let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
-wss.on("connection", function connection(ws) {
-  ws.on("error", console.error);
+const bucketName = "testbuket-s3-arn-1452555-xya/test-folder-name-from-cli";
+const folderName = "test-folder-name-from-cli2/"; // The trailing slash is crucial for S3 to recognize it as a folder
 
-  ws.on("message", function message(data: any) {
-    const message = JSON.parse(data);
-    if (message.type === "sender") {
-      senderSocket = ws;
-      console.log("Sender");
-    } else if (message.type === "receiver") {
-      receiverSocket = ws;
-      console.log("receiver");
-    } else if (message.type === "createOffer") {
-      if (ws !== senderSocket) {
-        return;
-      }
-      console.log("CreateOffer");
-      receiverSocket?.send(JSON.stringify({ type: "createOffer", sdp: message.sdp }));
-    } else if (message.type === "createAnswer") {
-      if (ws !== receiverSocket) {
-        return;
-      }
-      console.log("CreateAnswer");
-      senderSocket?.send(JSON.stringify({ type: "createAnswer", sdp: message.sdp }));
-    } else if (message.type === "iceCandidate") {
-      // exchange ICE candidates
-      if (ws === senderSocket) {
-        receiverSocket?.send(JSON.stringify({ type: "iceCandidate", candidate: message.candidate }));
-        console.log("Sender ICE");
-      } else if (ws === receiverSocket) {
-        senderSocket?.send(JSON.stringify({ type: "iceCandidate", candidate: message.candidate }));
-        console.log("Receiver ICE");
-      }
-    }
-  });
+var bucketParams = {
+  Bucket: bucketName,
+  Key: folderName,
+  Body: "",
+};
+
+s3.putObject(bucketParams, (err, data) => {
+  if (err) {
+    console.error("Error creating folder:", err);
+  } else {
+    console.log("Folder created successfully:", data);
+  }
 });
+
+// To Create the bucket
+// var bucketParams = {
+//   Bucket: "testbuket-s3-arn-1452555-xya",
+// };
+// // Call S3 to list the buckets
+// s3.createBucket(bucketParams, function (err, data) {
+//   if (err) {
+//     console.log("Error", err);
+//   } else {
+//     console.log("Success", data.Location);
+//   }
+// });
