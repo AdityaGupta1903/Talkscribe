@@ -1,36 +1,22 @@
-import "dotenv/config";
-import * as AWS from "aws-sdk";
+import express, { json } from "express";
+import cors from "cors";
 
-AWS.config.update({ region: "us-west-2" });
+const app = express();
 
-let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+app.use(cors());
 
-const bucketName = "testbuket-s3-arn-1452555-xya/test-folder-name-from-cli";
-const folderName = "test-folder-name-from-cli2/"; // The trailing slash is crucial for S3 to recognize it as a folder
+app.post("/upload", express.raw({ type: "*/*" }), (req, res) => {
+  try {
+    const data = req.body;
+    console.log(data);
 
-var bucketParams = {
-  Bucket: bucketName,
-  Key: folderName,
-  Body: "",
-};
-
-s3.putObject(bucketParams, (err, data) => {
-  if (err) {
-    console.error("Error creating folder:", err);
-  } else {
-    console.log("Folder created successfully:", data);
+    res.status(200).send({ "data-received": data });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err: err });
   }
 });
 
-// To Create the bucket
-// var bucketParams = {
-//   Bucket: "testbuket-s3-arn-1452555-xya",
-// };
-// // Call S3 to list the buckets
-// s3.createBucket(bucketParams, function (err, data) {
-//   if (err) {
-//     console.log("Error", err);
-//   } else {
-//     console.log("Success", data.Location);
-//   }
-// });
+app.listen(3000, () => {
+  console.log("Server is Running on Port" + " " + 3000);
+});

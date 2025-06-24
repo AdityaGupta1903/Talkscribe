@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
+import axios from "axios";
 
 function Video() {
   const [peerId, setPeerId] = useState("");
@@ -90,7 +91,13 @@ function Video() {
       const a = document.createElement("a");
       a.href = url;
       a.download = "meeting-recording.webm";
-      a.click();
+      // a.click();
+      axios.post("http://localhost:3000/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: blob,
+      });
+      console.log(recordedChunks);
     };
 
     mediaRecorder.start();
