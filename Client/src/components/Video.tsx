@@ -10,7 +10,7 @@ function Video() {
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const peerInstance = useRef<any>(null);
-  const recordedChunks: Blob[] = [];
+  let recordedChunks: Blob[] = [];
 
   useEffect(() => {
     const peer = new Peer();
@@ -87,16 +87,12 @@ function Video() {
 
     mediaRecorder.onstop = () => {
       const blob = new Blob(recordedChunks, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "meeting-recording.webm";
-      // a.click();
-      axios.post("http://localhost:3000/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/octet-stream" },
-        body: blob,
-      });
+      const file = new File([blob], "recording.webm", { type: "video/webm" });
+      console.log(file);
+
+      const formData = new FormData();
+      formData.append("video", file);
+      axios.post("http://localhost:3000/upload", formData);
       console.log(recordedChunks);
     };
 
@@ -106,6 +102,7 @@ function Video() {
     setInterval(() => {
       mediaRecorder.stop();
       mediaRecorder.start();
+      recordedChunks = [];
       console.log("Recording stopped");
     }, 10000); // Record for 10 seconds (adjust as needed)
   };
