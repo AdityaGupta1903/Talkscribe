@@ -6,6 +6,9 @@ import fs from "fs";
 import multer from "multer";
 
 const app = express();
+app.use(cors());
+
+// Configuring to store the video online
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, process.cwd() + "/tmp/my-uploads");
@@ -17,10 +20,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-app.use(cors());
-
+/// Configuring AWS settings
 AWS.config.update({ region: "us-west-2" });
-
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
 app.post("/upload", upload.single("video"), async (req, res) => {
