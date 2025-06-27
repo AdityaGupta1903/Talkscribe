@@ -15,23 +15,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -48,8 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
-const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-let ffmpegInstance = (0, fluent_ffmpeg_1.default)();
+const ffmpeg = require('fluent-ffmpeg');
 // Configure AWS
 AWS.config.update({ region: "us-west-2" });
 const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
@@ -62,13 +51,15 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(vo
         return;
     }
     const contents = ((_a = data.Contents) === null || _a === void 0 ? void 0 : _a.filter((item) => item.Key && item.Key !== PREFIX)) || [];
+    const paths = [];
     for (const [index, fileObj] of contents.entries()) {
         const Key = fileObj.Key;
         console.log(`Downloading: ${Key}`);
         try {
             const fileData = yield s3.getObject({ Bucket: BUCKET, Key }).promise();
             if (fileData.Body) {
-                const filePath = __dirname + `TempSavedVideo/file-${index}.webm`; //
+                const filePath = `./TempSavedVideo/file-${index}.webm`; //
+                paths.push(filePath);
                 fs_1.default.writeFileSync(filePath, fileData.Body);
                 console.log(`Saved to: ${filePath}`);
             }
@@ -77,5 +68,13 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(vo
             console.error(`Failed to download ${Key}:`, err);
         }
     }
+    let merged = ffmpeg();
+    paths.forEach(video => {
+        merged = merged.input(video);
+        merged
+            .on('error', (err) => console.error('Error:', err))
+            .on('end', () => console.log('Merging complete!'))
+            .mergeToFile('output.mp4', './tmp');
+    });
     console.log("Download complete.");
 }));

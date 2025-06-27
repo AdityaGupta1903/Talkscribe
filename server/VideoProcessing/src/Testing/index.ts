@@ -3,10 +3,12 @@ import cors from "cors";
 import "dotenv/config";
 import * as AWS from "aws-sdk";
 import fs from "fs";
-import Ffmpeg, * as ffmpeg from "fluent-ffmpeg";
-import { FfmpegCommandOptions } from "fluent-ffmpeg";
+import Ffmpeg from "fluent-ffmpeg";
 
-let ffmpegInstance = Ffmpeg();
+
+
+
+
 
 // Configure AWS
 AWS.config.update({ region: "us-west-2" });
@@ -23,6 +25,8 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
 
   const contents = data.Contents?.filter((item) => item.Key && item.Key !== PREFIX) || [];
 
+  const paths = [];
+
   for (const [index, fileObj] of contents.entries()) {
     const Key = fileObj.Key!;
     console.log(`Downloading: ${Key}`);
@@ -30,7 +34,8 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
     try {
       const fileData = await s3.getObject({ Bucket: BUCKET, Key }).promise();
       if (fileData.Body) {
-        const filePath = __dirname + `TempSavedVideo/file-${index}.webm`; //
+        const filePath = `./TempSavedVideo/file-${index}.webm`; //
+        paths.push(filePath);
         fs.writeFileSync(filePath, fileData.Body as Buffer);
         console.log(`Saved to: ${filePath}`);
       }
@@ -38,6 +43,16 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
       console.error(`Failed to download ${Key}:`, err);
     }
   }
+
+  let merged = Ffmpeg();
+  paths.forEach(video => {
+    merged = merged.input(video);
+
+    merged
+      .on('error', (err: any) => console.error('Error:', err))
+      .on('end', () => console.log('Merging complete!'))
+      .mergeToFile('output.mp4', './tmp');
+  });
 
   console.log("Download complete.");
 });
