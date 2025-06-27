@@ -3,6 +3,10 @@ import cors from "cors";
 import "dotenv/config";
 import * as AWS from "aws-sdk";
 import fs from "fs";
+import Ffmpeg, * as ffmpeg from "fluent-ffmpeg";
+import { FfmpegCommandOptions } from "fluent-ffmpeg";
+
+let ffmpegInstance = Ffmpeg();
 
 // Configure AWS
 AWS.config.update({ region: "us-west-2" });
@@ -26,7 +30,7 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
     try {
       const fileData = await s3.getObject({ Bucket: BUCKET, Key }).promise();
       if (fileData.Body) {
-        const filePath = `./file-${index}.webm`; //
+        const filePath = __dirname + `TempSavedVideo/file-${index}.webm`; //
         fs.writeFileSync(filePath, fileData.Body as Buffer);
         console.log(`Saved to: ${filePath}`);
       }

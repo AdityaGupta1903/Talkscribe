@@ -48,6 +48,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
+const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
+let ffmpegInstance = (0, fluent_ffmpeg_1.default)();
 // Configure AWS
 AWS.config.update({ region: "us-west-2" });
 const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
@@ -66,7 +68,7 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(vo
         try {
             const fileData = yield s3.getObject({ Bucket: BUCKET, Key }).promise();
             if (fileData.Body) {
-                const filePath = `./file-${index}.webm`; // You can customize filename
+                const filePath = __dirname + `TempSavedVideo/file-${index}.webm`; //
                 fs_1.default.writeFileSync(filePath, fileData.Body);
                 console.log(`Saved to: ${filePath}`);
             }
