@@ -1,14 +1,7 @@
-import express from "express";
-import cors from "cors";
 import "dotenv/config";
 import * as AWS from "aws-sdk";
 import fs from "fs";
 import Ffmpeg from "fluent-ffmpeg";
-
-
-
-
-
 
 // Configure AWS
 AWS.config.update({ region: "us-west-2" });
@@ -26,6 +19,7 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
   const contents = data.Contents?.filter((item) => item.Key && item.Key !== PREFIX) || [];
 
   const paths = [];
+  createFolderAsync("TempSavedVideo")
 
   for (const [index, fileObj] of contents.entries()) {
     const Key = fileObj.Key!;
@@ -47,12 +41,37 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
   let merged = Ffmpeg();
   paths.forEach(video => {
     merged = merged.input(video);
-
-    merged
-      .on('error', (err: any) => console.error('Error:', err))
-      .on('end', () => console.log('Merging complete!'))
-      .mergeToFile('output.mp4', './tmp');
   });
+  merged
+    .on('error', (err: any) => console.error('Error:', err))
+    .on('end', () => {
+      console.log('Merging complete!');
+    })
+    .mergeToFile('output.mp4', './tmp')
 
   console.log("Download complete.");
 });
+
+/// Creating Folder Logic
+async function createFolderAsync(folderName: string) {
+
+  if (!fs.existsSync(folderName)) {
+    fs.mkdirSync(folderName);
+    console.log(`Folder '${folderName}' created successfully.`);
+  }
+  else {
+
+    fs.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
+    fs.mkdirSync(folderName);
+  }
+}
+
+async function CleanUp(folderName: string) { /// call this method after uploading to AWS bucket.
+  if (fs.existsSync(folderName)) {
+    fs.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
+  }
+  if (fs.existsSync("output.mp4")) {
+    fs.unlinkSync("output.mp4")
+  }
+
+}
