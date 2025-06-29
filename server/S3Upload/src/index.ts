@@ -4,6 +4,8 @@ import "dotenv/config";
 import * as AWS from "aws-sdk";
 import fs from "fs";
 import multer from "multer";
+import axios from "axios";
+
 
 const app = express();
 app.use(cors());
@@ -51,6 +53,30 @@ app.post("/upload", upload.single("video"), async (req, res) => {
     res.status(500).send({ err: err });
   }
 });
+
+app.get("/code", async (req, res) => {
+  try {
+    let authCode = req.query.code;
+    let response = await axios.post("https://oauth2.googleapis.com/token", {
+      code: authCode,
+      client_id: process.env.client_id,
+      client_secret: process.env.client_secret,
+      redirect_uri: process.env.redirect_uri,
+      grant_type: "authorization_code"
+    },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
+    )
+    console.log(response.data);
+    res.redirect("http://localhost:5173/video")
+  }
+  catch (err) {
+    res.status(500).redirect("http://localhost:5173")
+  }
+})
 
 app.listen(3000, () => {
   console.log("Server is Running on Port" + " " + 3000);

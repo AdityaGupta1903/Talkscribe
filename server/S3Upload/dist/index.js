@@ -51,6 +51,7 @@ require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const multer_1 = __importDefault(require("multer"));
+const axios_1 = __importDefault(require("axios"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 // Configuring to store the video online
@@ -92,6 +93,30 @@ app.post("/upload", upload.single("video"), (req, res) => __awaiter(void 0, void
     catch (err) {
         console.log(err);
         res.status(500).send({ err: err });
+    }
+}));
+// app.get("/redirect", (req, res) => {
+//   res.
+// })
+app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let authCode = req.query.code;
+        let response = yield axios_1.default.post("https://oauth2.googleapis.com/token", {
+            code: authCode,
+            client_id: process.env.client_id,
+            client_secret: process.env.client_secret,
+            redirect_uri: process.env.redirect_uri,
+            grant_type: "authorization_code"
+        }, {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+        console.log(response.data);
+        res.redirect("http://localhost:5173/video");
+    }
+    catch (err) {
+        res.status(500).redirect("http://localhost:5173");
     }
 }));
 app.listen(3000, () => {

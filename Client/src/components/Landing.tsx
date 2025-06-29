@@ -1,18 +1,9 @@
 import React from 'react';
-import { Button, Container, Typography, Box, Paper } from '@mui/material';
+import { Button, Typography, Box, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Client_ID, redirect_URI } from "./../../contants"
+import { SSOURL } from "./../../contants"
 
 const LandingPage: React.FC = () => {
-
-    const SSOURL = `https://accounts.google.com/o/oauth2/v2/auth?
- scope=profile&
- include_granted_scopes=true&
- response_type=code&
- state=state_parameter_passthrough_value&
- redirect_uri=${redirect_URI}&
- client_id=${Client_ID}`
-
     return (
         <Box
             sx={{

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 import axios from "axios";
