@@ -52,8 +52,11 @@ const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const multer_1 = __importDefault(require("multer"));
 const axios_1 = __importDefault(require("axios"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const middleware_1 = require("./middleware");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
+app.use((0, cookie_parser_1.default)());
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
@@ -68,7 +71,7 @@ const upload = (0, multer_1.default)({ storage: storage });
 /// Configuring AWS settings
 AWS.config.update({ region: "us-west-2" });
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
-app.post("/upload", upload.single("video"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("video"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const file = req.file;
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
@@ -95,9 +98,10 @@ app.post("/upload", upload.single("video"), (req, res) => __awaiter(void 0, void
         res.status(500).send({ err: err });
     }
 }));
-// app.get("/redirect", (req, res) => {
-//   res.
-// })
+app.get('/testcookie', middleware_1.CheckIfUserIsAuthenticated, (req, res) => {
+    console.log("User is Authenticated");
+    res.status(200).send("User is Authenticated");
+});
 app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let authCode = req.query.code;
@@ -113,11 +117,22 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         });
         console.log(response.data);
-        res.redirect("http://localhost:5173/video");
+        if (response.data.refresh_token) {
+            console.log(response.data.refresh_token);
+            res.cookie("talkscribe_accessToken", response.data.id_token);
+            res.cookie("talkscribe_refresh_token", response.data.refresh_token);
+            res.redirect("http://localhost:5173/video");
+        }
+        else {
+            res.cookie("talkscribe_accessToken", response.data.id_token).redirect("http://localhost:5173/video");
+        }
     }
     catch (err) {
-        res.status(500).redirect("http://localhost:5173");
+        res.status(500).redirect("http://localhost:5173/authError");
     }
+}));
+app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.status(200).send("User Is Authenticated");
 }));
 app.listen(3000, () => {
     console.log("Server is Running on Port" + " " + 3000);

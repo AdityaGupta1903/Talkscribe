@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 import axios from "axios";
+import { Button } from "@mui/material";
 
 function Video() {
   const [peerId, setPeerId] = useState("");
@@ -130,6 +131,11 @@ function Video() {
           <video ref={remoteVideoRef} autoPlay style={{ width: 320, height: 240 }} />
         </div>
       </div>
+      <Button onClick={() => {
+        axios.get("http://localhost:3000/testcookie", {
+          withCredentials: true
+        })
+      }}>Test Btn</Button>
 
       {/* Hidden canvas used for recording */}
       <canvas ref={canvasRef} width={640} height={240} style={{ display: "none" }} />
