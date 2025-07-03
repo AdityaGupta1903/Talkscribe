@@ -3,7 +3,7 @@ import Peer from "peerjs";
 import axios from "axios";
 import { Button } from "@mui/material";
 
-function Video() {
+function CallSetup() {
   const [peerId, setPeerId] = useState("");
   const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -92,7 +92,7 @@ function Video() {
 
       const formData = new FormData();
       formData.append("video", file);
-      axios.post("http://localhost:3000/upload", formData);
+      axios.post("http://localhost:3000/upload", formData); /// upload the data to the backend on record interval
       console.log(recordedChunks);
     };
 
@@ -119,7 +119,9 @@ function Video() {
         onChange={(e) => setRemotePeerIdValue(e.target.value)}
         placeholder="Enter remote peer ID"
       />
-      <button onClick={() => call(remotePeerIdValue)}>Call</button>
+      <button onClick={() => {
+        call(remotePeerIdValue)
+      }}>Call</button>
 
       <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
         <div>
@@ -143,4 +145,4 @@ function Video() {
   );
 }
 
-export default Video;
+export default CallSetup;

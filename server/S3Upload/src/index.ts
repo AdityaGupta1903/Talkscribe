@@ -100,6 +100,10 @@ app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
   res.status(200).send("User Is Authenticated");
 })
 
+app.get('/getBucketName', CheckIfUserIsAuthenticated, async (req, res) => {
+
+})
+
 app.listen(3000, () => {
   console.log("Server is Running on Port" + " " + 3000);
 });
