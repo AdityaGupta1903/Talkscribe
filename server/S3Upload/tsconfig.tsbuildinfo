@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/S3Dump/example.ts","./src/S3Dump/index.ts","./src/S3Dump/testdb.ts","./src/db/lib/prisma.ts","./src/middleware/index.ts"],"version":"5.8.2"}
+{"root":["./src/index.ts","./src/Queue/consumer.ts","./src/Queue/index.ts","./src/S3Dump/example.ts","./src/S3Dump/index.ts","./src/S3Dump/testdb.ts","./src/db/lib/prisma.ts","./src/middleware/index.ts"],"version":"5.8.2"}
