@@ -1,148 +1,80 @@
-import { useEffect, useRef, useState } from "react";
-import Peer from "peerjs";
-import axios from "axios";
-import { Button } from "@mui/material";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Card, CardContent, Typography, Box, Container } from "@mui/material";
+import VideoCallIcon from '@mui/icons-material/VideoCall';
 
-function CallSetup() {
-  const [peerId, setPeerId] = useState("");
-  const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const currentUserVideoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const peerInstance = useRef<any>(null);
-  let recordedChunks: Blob[] = [];
+const previousRecordings = [
+  {
+    id: 1,
+    title: "Team Sync - July 1",
+    date: "2025-07-01",
+    url: "#",
+  },
+  {
+    id: 2,
+    title: "Client Meeting - June 28",
+    date: "2025-06-28",
+    url: "#",
+  },
+  {
+    id: 3,
+    title: "Project Kickoff - June 20",
+    date: "2025-06-20",
+    url: "#",
+  },
+];
 
-  useEffect(() => {
-    const peer = new Peer();
+const CallSetup = () => {
+  const navigate = useNavigate();
 
-    peer.on("open", (id) => {
-      setPeerId(id);
-    });
-
-    peer.on("call", (call) => {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
-        currentUserVideoRef.current!.srcObject = mediaStream;
-        currentUserVideoRef.current!.play();
-        call.answer(mediaStream);
-
-        call.on("stream", (remoteStream) => {
-          remoteVideoRef.current!.srcObject = remoteStream;
-          remoteVideoRef.current!.play();
-
-          startDrawingCanvas();
-          startRecordingMergedCanvas();
-        });
-      });
-    });
-
-    peerInstance.current = peer;
-  }, []);
-
-  const call = (remotePeerId: string) => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
-      currentUserVideoRef.current!.srcObject = mediaStream;
-      currentUserVideoRef.current!.play();
-
-      const call = peerInstance.current.call(remotePeerId, mediaStream);
-
-      call.on("stream", (remoteStream: MediaStream) => {
-        remoteVideoRef.current!.srcObject = remoteStream;
-        remoteVideoRef.current!.play();
-
-        startDrawingCanvas();
-        startRecordingMergedCanvas();
-      });
-    });
-  };
-
-  const startDrawingCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-
-    const draw = () => {
-      if (currentUserVideoRef.current && remoteVideoRef.current) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(currentUserVideoRef.current, 0, 0, 320, 240); // Local on left
-        ctx.drawImage(remoteVideoRef.current, 320, 0, 320, 240); // Remote on right
-      }
-      requestAnimationFrame(draw);
-    };
-
-    draw();
-  };
-
-  const startRecordingMergedCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const canvasStream = canvas.captureStream(30); // 30 FPS
-    const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: "video/webm; codecs=vp9" });
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(recordedChunks, { type: "video/webm" });
-      const file = new File([blob], "recording.webm", { type: "video/webm" });
-      console.log(file);
-
-      const formData = new FormData();
-      formData.append("video", file);
-      axios.post("http://localhost:3000/upload", formData); /// upload the data to the backend on record interval
-      console.log(recordedChunks);
-    };
-
-    mediaRecorder.start();
-    console.log("Recording started");
-
-    setInterval(() => {
-      mediaRecorder.stop();
-      mediaRecorder.start();
-      recordedChunks = [];
-      console.log("Recording stopped");
-    }, 10000); // Record for 10 seconds (adjust as needed)
+  const handleStartVideo = () => {
+    navigate("/call");
   };
 
   return (
-    <div className="App">
-      <h2>
-        📹 Your Peer ID: <strong>{peerId}</strong>
-      </h2>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 8 }}>
+      <Container maxWidth="md">
+        <Typography variant="h3" align="center" gutterBottom>
+          Setup Your Call
+        </Typography>
 
-      <input
-        type="text"
-        value={remotePeerIdValue}
-        onChange={(e) => setRemotePeerIdValue(e.target.value)}
-        placeholder="Enter remote peer ID"
-      />
-      <button onClick={() => {
-        call(remotePeerIdValue)
-      }}>Call</button>
+        <Box display="flex" justifyContent="center" mb={6}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<VideoCallIcon />}
+            size="large"
+            onClick={handleStartVideo}
+          >
+            Start Video
+          </Button>
+        </Box>
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-        <div>
-          <h4>Local Video</h4>
-          <video ref={currentUserVideoRef} autoPlay muted style={{ width: 320, height: 240 }} />
-        </div>
-        <div>
-          <h4>Remote Video</h4>
-          <video ref={remoteVideoRef} autoPlay style={{ width: 320, height: 240 }} />
-        </div>
-      </div>
-      <Button onClick={() => {
-        axios.get("http://localhost:3000/testcookie", {
-          withCredentials: true
-        })
-      }}>Test Btn</Button>
+        <Typography variant="h5" gutterBottom>
+          Previous Recordings
+        </Typography>
 
-      {/* Hidden canvas used for recording */}
-      <canvas ref={canvasRef} width={640} height={240} style={{ display: "none" }} />
-    </div>
+        <Box display="grid" gap={2}>
+          {previousRecordings.map((rec) => (
+            <Card
+              key={rec.id}
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 6 } }}
+              onClick={() => window.location.href = rec.url}
+            >
+              <CardContent>
+                <Typography variant="h6" color="primary">
+                  {rec.title}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {rec.date}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </Container>
+    </Box>
   );
-}
+};
 
 export default CallSetup;
