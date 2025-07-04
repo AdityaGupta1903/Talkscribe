@@ -6,12 +6,12 @@ import { Button, TextField, Box } from "@mui/material";
 function Call() {
     const [peerId, setPeerId] = useState("");
     const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
-    const [startRecording, setStartRecoding] = useState<boolean>(true);
+    const [startRecording, setStartRecoding] = useState<boolean>(false);
+    const [IntervalId, setIntervalId] = useState<number>(-1);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const currentUserVideoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const peerInstance = useRef<any>({});
-
     let recordedChunks: Blob[] = [];
 
     useEffect(() => {
@@ -47,7 +47,7 @@ function Call() {
     }, []);
 
     useEffect(() => {
-        if (remotePeerIdValue && peerInstance.current.peer && peerInstance.current.localStream) {
+        if (remotePeerIdValue.length > 0 && peerInstance.current.peer && peerInstance.current.localStream) {
             const call = peerInstance.current.peer.call(remotePeerIdValue, peerInstance.current.localStream);
             call.on("stream", (remoteStream: MediaStream) => {
                 if (remoteVideoRef.current) {
@@ -76,34 +76,40 @@ function Call() {
     };
 
     const startRecordingMergedCanvas = (startRecording: boolean) => {
+        if (startRecording == true) {
+            clearInterval(IntervalId);
+            setStartRecoding(false);
+        }
+        else {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
 
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+            const canvasStream = canvas.captureStream(30);
+            const mediaRecorder = new MediaRecorder(canvasStream, {
+                mimeType: "video/webm; codecs=vp9",
+            });
 
-        const canvasStream = canvas.captureStream(30);
-        const mediaRecorder = new MediaRecorder(canvasStream, {
-            mimeType: "video/webm; codecs=vp9",
-        });
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: "video/webm" });
+                const file = new File([blob], "recording.webm", { type: "video/webm" });
 
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            const file = new File([blob], "recording.webm", { type: "video/webm" });
-
-            const formData = new FormData();
-            formData.append("video", file);
-            axios.post("http://localhost:3000/upload", formData);
-        };
-
-        mediaRecorder.start();
-        setInterval(() => {
-            mediaRecorder.stop();
+                const formData = new FormData();
+                formData.append("video", file);
+                axios.post("http://localhost:3000/upload", formData);
+                recordedChunks = []
+            };
             mediaRecorder.start();
-            recordedChunks = [];
-        }, 10000);
+            let IntervalId = setInterval(() => {
+                mediaRecorder.stop();
+                mediaRecorder.start();
+                console.log(recordedChunks);
+            }, 10000);
+            setIntervalId(IntervalId);
+            setStartRecoding(true);
+        }
     };
 
     return (
@@ -149,8 +155,7 @@ function Call() {
                 gap: 1,
             }} variant="outlined" onClick={() => {
                 startRecordingMergedCanvas(startRecording);
-                setStartRecoding(!startRecording)
-            }}>{startRecording ? "Start Recording" : "Stop Recording"}</Button>
+            }}>{startRecording ? "Stop Recording" : "Start Recording"}</Button>
             {!remotePeerIdValue && (
                 <Box
                     sx={{
