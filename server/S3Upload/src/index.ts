@@ -11,7 +11,7 @@ import { CheckIfUserIsAuthenticated } from "./middleware";
 
 
 const app = express();
-app.use(cors());
+app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 
 // Configuring to store the video online
@@ -97,7 +97,7 @@ app.get("/code", async (req, res) => {
 })
 
 app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
-  res.status(200).send("User Is Authenticated");
+  res.status(200).send({ authenticated: true });
 })
 
 app.get('/getBucketName', CheckIfUserIsAuthenticated, async (req, res) => {

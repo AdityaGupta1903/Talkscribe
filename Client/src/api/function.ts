@@ -1,0 +1,16 @@
+import axios from "axios";
+export class Controller {
+    public static async isUserAuthenticated() {
+        try {
+            let res = await axios.get("http://localhost:3000/loggedin", {
+                withCredentials: true
+            })
+            console.log(res.data);
+            return res.data.authenticated;
+        }
+        catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+}

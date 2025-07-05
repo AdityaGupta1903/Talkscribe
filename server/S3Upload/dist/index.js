@@ -55,7 +55,7 @@ const axios_1 = __importDefault(require("axios"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({ credentials: true, origin: true }));
 app.use((0, cookie_parser_1.default)());
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
@@ -132,7 +132,9 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.status(200).send("User Is Authenticated");
+    res.status(200).send({ authenticated: true });
+}));
+app.get('/getBucketName', middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.listen(3000, () => {
     console.log("Server is Running on Port" + " " + 3000);
