@@ -31,7 +31,7 @@ function CheckIfUserIsAuthenticated(req, res, next) {
                 next();
             }
             else {
-                res.redirect("http://localhost:5173");
+                res.redirect("http://localhost:5173"); // redirect to login page
             }
         }
         catch (err) {

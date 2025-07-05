@@ -17,6 +17,7 @@ function Call() {
     useEffect(() => {
         const URLParams = new URLSearchParams(window.location.search);
         const remoteId = URLParams.get("pid");
+        const UID = URLParams.get("uid");
         if (remoteId) setRemotePeerIdValue(remoteId);
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
@@ -28,6 +29,13 @@ function Call() {
         });
 
         const peer = new Peer();
+        peer.on('connection', (conn) => {
+            conn.on('data', (data) => {
+                console.log('Received:' + data)
+            })
+            conn.send('Test Val');
+        })
+
         peerInstance.current.peer = peer;
 
         peer.on("open", (id) => setPeerId(id));
@@ -48,6 +56,10 @@ function Call() {
 
     useEffect(() => {
         if (remotePeerIdValue.length > 0 && peerInstance.current.peer && peerInstance.current.localStream) {
+            const peerConnection = peerInstance.current.peer.connect(remotePeerIdValue);
+            peerConnection.on('open', () => {
+                peerConnection.send("dataId" + Math.random() * 1000);
+            })
             const call = peerInstance.current.peer.call(remotePeerIdValue, peerInstance.current.localStream);
             call.on("stream", (remoteStream: MediaStream) => {
                 if (remoteVideoRef.current) {
