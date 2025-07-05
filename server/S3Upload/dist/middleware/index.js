@@ -35,7 +35,7 @@ function CheckIfUserIsAuthenticated(req, res, next) {
             }
         }
         catch (err) {
-            res.status(401).send("UNAUTHORISED");
+            res.status(401).send("UNAUTHORIZED");
         }
     }));
 }

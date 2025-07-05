@@ -2,8 +2,6 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
 
-
-
 export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: NextFunction) {
     const accessToken = req.cookies?.talkscribe_accessToken;
     verify(accessToken).then(() => {
@@ -18,13 +16,12 @@ export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: Ne
                 next();
             }
             else {
-                res.redirect("http://localhost:5173");
+                res.redirect("http://localhost:5173"); // redirect to login page
             }
         }
         catch (err) {
-            res.status(401).send("UNAUTHORISED")
+            res.status(401).send("UNAUTHORIZED")
         }
-
     })
 }
 
@@ -49,7 +46,6 @@ const getAccessTokenFromRefreshToken = async (refreshToken: string) => {
     }
 }
 const verify = async (idToken: string) => {
-
     const client = new OAuth2Client();
     const ticket = await client.verifyIdToken({
         idToken: idToken,
@@ -58,5 +54,4 @@ const verify = async (idToken: string) => {
     const payload = ticket.getPayload();
     console.log(payload);
     const userId = payload && payload["sub"];
-
 }

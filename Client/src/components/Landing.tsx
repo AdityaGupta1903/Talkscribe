@@ -2,8 +2,22 @@ import React from 'react';
 import { Button, Typography, Box, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { SSOURL } from "./../../contants"
+import { Controller } from '../api/function';
+import { useNavigate } from "react-router-dom";
 
 const LandingPage: React.FC = () => {
+    const navigate = useNavigate();
+    const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null); // null = loading
+    React.useEffect(() => {
+        const setIsAuth = async () => {
+            const res = await Controller.isUserAuthenticated();
+            setIsAuthenticated(res);
+        };
+        setIsAuth();
+    }, []);
+    if (isAuthenticated == true) {
+        navigate("/video")
+    }
     return (
         <Box
             sx={{
