@@ -12,13 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
 exports.CheckIfUserIsAuthenticated = CheckIfUserIsAuthenticated;
 const google_auth_library_1 = require("google-auth-library");
+const prisma_1 = __importDefault(require("../db/lib/prisma"));
 const axios_1 = __importDefault(require("axios"));
 function CheckIfUserIsAuthenticated(req, res, next) {
     var _a;
     const accessToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.talkscribe_accessToken;
-    verify(accessToken).then(() => {
+    (0, exports.verifyAndRetrieveUserEmail)(accessToken).then(() => {
         next();
     }).catch((err) => __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -57,7 +59,7 @@ const getAccessTokenFromRefreshToken = (refreshToken) => __awaiter(void 0, void 
         console.log(err);
     }
 });
-const verify = (idToken) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyAndRetrieveUserEmail = (idToken) => __awaiter(void 0, void 0, void 0, function* () {
     const client = new google_auth_library_1.OAuth2Client();
     const ticket = yield client.verifyIdToken({
         idToken: idToken,
@@ -65,5 +67,34 @@ const verify = (idToken) => __awaiter(void 0, void 0, void 0, function* () {
     });
     const payload = ticket.getPayload();
     console.log(payload);
-    const userId = payload && payload["sub"];
+    const UserEmail = payload && payload["email"];
+    const UserName = payload && payload["name"];
+    return { UserEmail: UserEmail, UserName: UserName };
 });
+exports.verifyAndRetrieveUserEmail = verifyAndRetrieveUserEmail;
+const AddUserToDB = (Email, UserName) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let user = yield prisma_1.default.user.findFirst({
+            where: {
+                Email: Email
+            }
+        });
+        if (user) {
+            return user.Id;
+        }
+        else {
+            let addUser = yield prisma_1.default.user.create({
+                data: {
+                    Email: Email,
+                    Name: UserName
+                }
+            });
+            console.log(addUser);
+            return addUser.Id;
+        }
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+exports.AddUserToDB = AddUserToDB;

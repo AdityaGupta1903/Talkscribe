@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, Typography, Box, Container } from "@mui/material";
 import VideoCallIcon from '@mui/icons-material/VideoCall';

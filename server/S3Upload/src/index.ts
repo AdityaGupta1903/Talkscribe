@@ -6,7 +6,8 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import { CheckIfUserIsAuthenticated } from "./middleware";
+import { AddUserToDB, CheckIfUserIsAuthenticated, verifyAndRetrieveUserEmail } from "./middleware";
+import prisma from "./db/lib/prisma";
 
 
 
@@ -25,6 +26,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage: storage });
+
 
 /// Configuring AWS settings
 AWS.config.update({ region: "us-west-2" });
@@ -84,12 +86,25 @@ app.get("/code", async (req, res) => {
       console.log(response.data.refresh_token)
       res.cookie("talkscribe_accessToken", response.data.id_token)
       res.cookie("talkscribe_refresh_token", response.data.refresh_token);
+      let { UserEmail, UserName } = await verifyAndRetrieveUserEmail(response.data.id_token);
+      if (UserEmail && UserName) {
+        let resp = await AddUserToDB(UserEmail, UserName);
+        if (resp) {
+          res.cookie("UID", resp);
+        }
+      }
       res.redirect("http://localhost:5173/video")
     }
     else {
+      let { UserEmail, UserName } = await verifyAndRetrieveUserEmail(response.data.id_token);
+      if (UserEmail && UserName) {
+        let resp = await AddUserToDB(UserEmail, UserName)
+        if (resp) {
+          res.cookie("UID", resp);
+        }
+      }
       res.cookie("talkscribe_accessToken", response.data.id_token).redirect("http://localhost:5173/video");
     }
-
   }
   catch (err) {
     res.status(500).redirect("http://localhost:5173/authError");

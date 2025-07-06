@@ -121,9 +121,23 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             console.log(response.data.refresh_token);
             res.cookie("talkscribe_accessToken", response.data.id_token);
             res.cookie("talkscribe_refresh_token", response.data.refresh_token);
+            let { UserEmail, UserName } = yield (0, middleware_1.verifyAndRetrieveUserEmail)(response.data.id_token);
+            if (UserEmail && UserName) {
+                let resp = yield (0, middleware_1.AddUserToDB)(UserEmail, UserName);
+                if (resp) {
+                    res.cookie("UID", resp);
+                }
+            }
             res.redirect("http://localhost:5173/video");
         }
         else {
+            let { UserEmail, UserName } = yield (0, middleware_1.verifyAndRetrieveUserEmail)(response.data.id_token);
+            if (UserEmail && UserName) {
+                let resp = yield (0, middleware_1.AddUserToDB)(UserEmail, UserName);
+                if (resp) {
+                    res.cookie("UID", resp);
+                }
+            }
             res.cookie("talkscribe_accessToken", response.data.id_token).redirect("http://localhost:5173/video");
         }
     }
