@@ -72,13 +72,17 @@ const upload = (0, multer_1.default)({ storage: storage });
 AWS.config.update({ region: "us-west-2" });
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("video"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const file = req.file;
+        let { currentUID, remoteUID } = JSON.parse((_a = req.body) === null || _a === void 0 ? void 0 : _a.rec_details);
+        let getCurrentSequence = yield (0, middleware_1.getCurrentRecordingSequence)(currentUID, remoteUID);
+        let BucketKey = currentUID + "-" + remoteUID + "-" + middleware_1.getCurrentRecordingSequence;
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
         console.log(req.file);
         const uploadParams = {
             Bucket: "testbuket-s3-arn-1452555-xya",
-            Key: `test-folder-name-from-cli/${Date.now()}-chunk191.mp4`,
+            Key: `${BucketKey}/${Date.now()}.mp4`,
             Body: filstream,
             ContentType: file === null || file === void 0 ? void 0 : file.mimetype, // optional but recommended
         };
@@ -147,6 +151,16 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.status(200).send({ authenticated: true });
+}));
+app.get("/getUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let UID = req.cookies.UID;
+        res.status(200).send({ UID: UID });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ "err": err });
+    }
 }));
 app.get('/getBucketName', middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));

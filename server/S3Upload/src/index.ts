@@ -6,8 +6,8 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import { AddUserToDB, CheckIfUserIsAuthenticated, verifyAndRetrieveUserEmail } from "./middleware";
-import prisma from "./db/lib/prisma";
+import { AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
+
 
 
 
@@ -35,12 +35,15 @@ let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (req, res) => {
   try {
     const file = req.file;
+    let { currentUID, remoteUID } = JSON.parse(req.body?.rec_details);
+    let getCurrentSequence = await getCurrentRecordingSequence(currentUID, remoteUID);
+    let BucketKey = currentUID + "-" + remoteUID + "-" + getCurrentRecordingSequence
     const filstream = fs.createReadStream(file?.path!);
     console.log(req.file);
 
     const uploadParams = {
       Bucket: "testbuket-s3-arn-1452555-xya",
-      Key: `test-folder-name-from-cli/${Date.now()}-chunk191.mp4`,
+      Key: `${BucketKey}/${Date.now()}.mp4`,
       Body: filstream,
       ContentType: file?.mimetype, // optional but recommended
     };
@@ -113,6 +116,17 @@ app.get("/code", async (req, res) => {
 
 app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
   res.status(200).send({ authenticated: true });
+})
+
+app.get("/getUserId", async (req, res) => {
+  try {
+    let UID = req.cookies.UID;
+    res.status(200).send({ UID: UID })
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send({ "err": err });
+  }
 })
 
 app.get('/getBucketName', CheckIfUserIsAuthenticated, async (req, res) => {

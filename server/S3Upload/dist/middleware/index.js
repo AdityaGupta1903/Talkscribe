@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
+exports.getCurrentRecordingSequence = exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
 exports.CheckIfUserIsAuthenticated = CheckIfUserIsAuthenticated;
 const google_auth_library_1 = require("google-auth-library");
 const prisma_1 = __importDefault(require("../db/lib/prisma"));
 const axios_1 = __importDefault(require("axios"));
+const crypto_1 = require("crypto");
 function CheckIfUserIsAuthenticated(req, res, next) {
     var _a;
     const accessToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.talkscribe_accessToken;
@@ -86,7 +87,8 @@ const AddUserToDB = (Email, UserName) => __awaiter(void 0, void 0, void 0, funct
             let addUser = yield prisma_1.default.user.create({
                 data: {
                     Email: Email,
-                    Name: UserName
+                    Name: UserName,
+                    Id: (0, crypto_1.randomUUID)()
                 }
             });
             console.log(addUser);
@@ -98,3 +100,21 @@ const AddUserToDB = (Email, UserName) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.AddUserToDB = AddUserToDB;
+const getCurrentRecordingSequence = (UID, RemoteUID) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let resp = yield prisma_1.default.recordings.findMany({
+            where: {
+                User: {
+                    Id: UID
+                },
+                RemoteUserId: RemoteUID
+            }
+        });
+        return resp.length + 1;
+    }
+    catch (err) {
+        console.log(err);
+        return Math.abs(Math.random() * 1000);
+    }
+});
+exports.getCurrentRecordingSequence = getCurrentRecordingSequence;

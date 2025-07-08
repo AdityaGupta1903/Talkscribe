@@ -2,6 +2,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { OAuth2Client } from "google-auth-library";
 import prisma from "../db/lib/prisma";
 import axios from "axios";
+import { randomUUID } from "crypto";
 
 export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: NextFunction) {
     const accessToken = req.cookies?.talkscribe_accessToken;
@@ -71,7 +72,8 @@ export const AddUserToDB = async (Email: string, UserName: string) => {
             let addUser = await prisma.user.create({
                 data: {
                     Email: Email,
-                    Name: UserName
+                    Name: UserName,
+                    Id: randomUUID()
                 }
             });
             console.log(addUser);
@@ -82,3 +84,24 @@ export const AddUserToDB = async (Email: string, UserName: string) => {
         console.log(err);
     }
 }
+
+export const getCurrentRecordingSequence = async (UID: string, RemoteUID: string) => {
+    try {
+        let resp = await prisma.recordings.findMany({
+            where: {
+                User: {
+                    Id: UID
+                },
+                RemoteUserId: RemoteUID
+            }
+        });
+
+        return resp.length + 1;
+    }
+    catch (err) {
+        console.log(err);
+        return Math.abs(Math.random() * 1000);
+    }
+}
+
+
