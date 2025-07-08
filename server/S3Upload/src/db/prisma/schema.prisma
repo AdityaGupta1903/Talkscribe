@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-    Id         Int          @id @default(autoincrement())
+    Id         String       @id @default(uuid())
     Name       String?
     Email      String       @unique
     Recordings Recordings[]
 }
 
 model Recordings {
-    Id        Int      @id @default(autoincrement())
-    UserId    Int
-    Recording String
-    Date      DateTime
-    Processed Boolean
-    PublicUrl String?
-    User      User     @relation(fields: [UserId], references: [Id])
+    Id           Int      @id @default(autoincrement())
+    UserId       String
+    RemoteUserId String
+    Recording    String
+    Date         DateTime
+    Processed    Boolean
+    PublicUrl    String?
+    User         User     @relation(fields: [UserId], references: [Id])
 }

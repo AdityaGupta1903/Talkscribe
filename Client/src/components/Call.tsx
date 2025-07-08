@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 import axios from "axios";
 import { Button, TextField, Box } from "@mui/material";
+import { Controller } from "../api/function";
 
 function Call() {
     const [peerId, setPeerId] = useState("");
     const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
     const [startRecording, setStartRecoding] = useState<boolean>(false);
     const [IntervalId, setIntervalId] = useState<number>(-1);
+    const [currentUID, setcurrentUID] = useState<string>();
+    const [remoteUID, setremoteUID] = useState<string>();
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const currentUserVideoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,6 +22,11 @@ function Call() {
         const remoteId = URLParams.get("pid");
         const UID = URLParams.get("uid");
         if (remoteId) setRemotePeerIdValue(remoteId);
+        if (UID) setremoteUID(UID);
+
+        Controller.getUserId().then((resp) => {
+            setcurrentUID(resp);
+        })
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((mediaStream) => {
             if (currentUserVideoRef.current) {
@@ -31,9 +39,9 @@ function Call() {
         const peer = new Peer();
         peer.on('connection', (conn) => {
             conn.on('data', (data) => {
-                console.log('Received:' + data)
+                setremoteUID(data as unknown as string);
             })
-            conn.send('Test Val');
+
         })
 
         peerInstance.current.peer = peer;
@@ -58,7 +66,7 @@ function Call() {
         if (remotePeerIdValue.length > 0 && peerInstance.current.peer && peerInstance.current.localStream) {
             const peerConnection = peerInstance.current.peer.connect(remotePeerIdValue);
             peerConnection.on('open', () => {
-                peerConnection.send("dataId" + Math.random() * 1000);
+                peerConnection.send(currentUID);
             })
             const call = peerInstance.current.peer.call(remotePeerIdValue, peerInstance.current.localStream);
             call.on("stream", (remoteStream: MediaStream) => {
@@ -110,7 +118,14 @@ function Call() {
 
                 const formData = new FormData();
                 formData.append("video", file);
-                axios.post("http://localhost:3000/upload", formData);
+                let RecordingDetails = {
+                    currentUID: currentUID,
+                    remoteUID: remoteUID
+                }
+                formData.append("rec_details", JSON.stringify(RecordingDetails));
+                axios.post("http://localhost:3000/upload", formData, {
+                    withCredentials: true
+                });
                 recordedChunks = []
             };
             mediaRecorder.start();
@@ -124,6 +139,8 @@ function Call() {
         }
     };
 
+    console.log(remoteUID);
+    console.log(currentUID);
     return (
         <>
             <Box sx={{ height: "100vh", width: "100vw", overflow: "hidden", position: "relative", backgroundColor: "#000" }}>
@@ -186,7 +203,7 @@ function Call() {
                         label="Invite Link"
                         variant="outlined"
                         size="small"
-                        value={`${window.location.origin}${window.location.pathname}?pid=${peerId}`}
+                        value={`${window.location.origin}${window.location.pathname}?pid=${peerId}&uid=${currentUID}`}
                         fullWidth
                         InputProps={{ readOnly: true }}
                         sx={{ input: { color: "#fff" }, label: { color: "#ccc" } }}
@@ -195,7 +212,7 @@ function Call() {
                         variant="contained"
                         onClick={async () => {
                             await navigator.clipboard.writeText(
-                                `${window.location.origin}${window.location.pathname}?pid=${peerId}`
+                                `${window.location.origin}${window.location.pathname}?pid=${peerId}&uid=${currentUID}`
                             );
                         }}
                     >
