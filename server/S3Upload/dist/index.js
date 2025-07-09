@@ -77,7 +77,7 @@ app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("vide
         const file = req.file;
         let { currentUID, remoteUID } = JSON.parse((_a = req.body) === null || _a === void 0 ? void 0 : _a.rec_details);
         let getCurrentSequence = yield (0, middleware_1.getCurrentRecordingSequence)(currentUID, remoteUID);
-        let BucketKey = currentUID + "-" + remoteUID + "-" + middleware_1.getCurrentRecordingSequence;
+        let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence;
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
         console.log(req.file);
         const uploadParams = {
