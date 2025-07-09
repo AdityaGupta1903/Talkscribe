@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 import prisma from "../db/lib/prisma";
 import axios from "axios";
 import { randomUUID } from "crypto";
+import { myQueue } from "../Queue";
 
 export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: NextFunction) {
     const accessToken = req.cookies?.talkscribe_accessToken;
@@ -101,6 +102,25 @@ export const getCurrentRecordingSequence = async (UID: string, RemoteUID: string
     catch (err) {
         console.log(err);
         return Math.abs(Math.random() * 1000);
+    }
+}
+
+export const AddRecordingToDB = async (UID: string, RemoteUID: string) => {
+    try {
+        let resp = await prisma.recordings.create({
+            data: {
+                Date: new Date(),
+                Processed: false,
+                UserId: UID,
+                RemoteUserId: RemoteUID,
+            }
+        });
+        if (resp) {
+            myQueue.add("ProcessVideo", { vid: resp.Id });
+        }
+    }
+    catch (err) {
+        console.log(err);
     }
 }
 

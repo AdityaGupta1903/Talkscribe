@@ -9,8 +9,7 @@ import cookieParser from "cookie-parser"
 import { AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
 
 
-
-
+/// middlewares
 const app = express();
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
@@ -21,7 +20,7 @@ const storage = multer.diskStorage({
     cb(null, process.cwd() + "/tmp/my-uploads");
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const uniqueSuffix = Date.now()
     cb(null, file.fieldname + "-" + uniqueSuffix);
   },
 });
@@ -37,7 +36,7 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
     const file = req.file;
     let { currentUID, remoteUID } = JSON.parse(req.body?.rec_details);
     let getCurrentSequence = await getCurrentRecordingSequence(currentUID, remoteUID);
-    let BucketKey = currentUID + "-" + remoteUID + "-" + getCurrentRecordingSequence
+    let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence
     const filstream = fs.createReadStream(file?.path!);
     console.log(req.file);
 
@@ -63,10 +62,7 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
   }
 });
 
-app.get('/testcookie', CheckIfUserIsAuthenticated, (req: Request, res: Response) => {
-  console.log("User is Authenticated")
-  res.status(200).send("User is Authenticated");
-})
+
 
 app.get("/code", async (req, res) => {
   try {
@@ -126,6 +122,17 @@ app.get("/getUserId", async (req, res) => {
   catch (err) {
     console.log(err);
     res.status(500).send({ "err": err });
+  }
+})
+
+app.post("/stoprecording", CheckIfUserIsAuthenticated, async (req, res) => {
+  let { currentUID, remoteUID } = JSON.parse(req.body?.rec_details);
+  try {
+
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send({ err: err });
   }
 })
 

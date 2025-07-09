@@ -87,7 +87,6 @@ s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(vo
         .on('error', (err) => console.error('Error:', err))
         .on('end', () => {
         console.log('Merging complete!');
-        CleanUp("TempSavedVideo");
     })
         .mergeToFile('output.mp4', './tmp');
     console.log("Download complete.");
