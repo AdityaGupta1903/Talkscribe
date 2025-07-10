@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentRecordingSequence = exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
+exports.AddRecordingToDB = exports.getCurrentRecordingSequence = exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
 exports.CheckIfUserIsAuthenticated = CheckIfUserIsAuthenticated;
 const google_auth_library_1 = require("google-auth-library");
 const prisma_1 = __importDefault(require("../db/lib/prisma"));
 const axios_1 = __importDefault(require("axios"));
 const crypto_1 = require("crypto");
+const Queue_1 = require("../Queue");
 function CheckIfUserIsAuthenticated(req, res, next) {
     var _a;
     const accessToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.talkscribe_accessToken;
@@ -118,3 +119,27 @@ const getCurrentRecordingSequence = (UID, RemoteUID) => __awaiter(void 0, void 0
     }
 });
 exports.getCurrentRecordingSequence = getCurrentRecordingSequence;
+const AddRecordingToDB = (UID, RemoteUID) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let resp = yield prisma_1.default.recordings.create({
+            data: {
+                Date: new Date(),
+                Processed: false,
+                UserId: UID,
+                RemoteUserId: RemoteUID,
+            }
+        });
+        if (resp) {
+            Queue_1.myQueue.add("ProcessVideo", { vid: resp.Id });
+            return resp.Id;
+        }
+        else {
+            return -1;
+        }
+    }
+    catch (err) {
+        console.log(err);
+        return -1;
+    }
+});
+exports.AddRecordingToDB = AddRecordingToDB;

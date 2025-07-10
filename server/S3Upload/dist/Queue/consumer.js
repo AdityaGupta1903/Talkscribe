@@ -8,13 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const bullmq_1 = require("bullmq");
-const ioredis_1 = __importDefault(require("ioredis"));
-const connection = new ioredis_1.default({ host: "locahost", port: 6379, maxRetriesPerRequest: null });
+//const connection = new IORedis({ host: "locahost", port: 6379, maxRetriesPerRequest: null });
 const myFirstWorker = new bullmq_1.Worker('foo', (job) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(job.data);
 }), { connection: { host: "localhost", port: 6379 } });

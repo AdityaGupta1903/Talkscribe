@@ -1,4 +1,4 @@
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, { type Request, type Response, type NextFunction, json } from "express";
 import cors from "cors";
 import "dotenv/config";
 import * as AWS from "aws-sdk";
@@ -6,13 +6,18 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import { AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
+import * as BodyParser from "body-parser"
+
+import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
 
 
 /// middlewares
 const app = express();
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // Configuring to store the video online
 const storage = multer.diskStorage({
@@ -55,7 +60,7 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
       }
     });
 
-    res.status(200).send({ "data-received": "received" });
+    res.status(200).send({ "State": "Uploaded Successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).send({ err: err });
@@ -125,10 +130,16 @@ app.get("/getUserId", async (req, res) => {
   }
 })
 
-app.post("/stoprecording", CheckIfUserIsAuthenticated, async (req, res) => {
+app.post("/stoprecording", async (req, res) => {
   let { currentUID, remoteUID } = JSON.parse(req.body?.rec_details);
   try {
-
+    let VideoId = await AddRecordingToDB(currentUID, remoteUID);
+    if (VideoId != -1) {
+      res.status(200).send({ message: `Video saved with id ${VideoId}` })
+    }
+    else {
+      res.status(200).send({ message: `Failed to save video` })
+    }
   }
   catch (err) {
     console.log(err);

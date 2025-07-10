@@ -49,68 +49,70 @@ require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-// Configure AWS
-AWS.config.update({ region: "us-west-2" });
-const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
-const BUCKET = "testbuket-s3-arn-1452555-xya";
-const PREFIX = "test-folder-name-from-cli/";
-s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    if (err) {
-        console.error("Error listing S3 objects:", err);
-        return;
-    }
-    const contents = ((_a = data.Contents) === null || _a === void 0 ? void 0 : _a.filter((item) => item.Key && item.Key !== PREFIX)) || [];
-    const paths = [];
-    createFolderAsync("TempSavedVideo");
-    for (const [index, fileObj] of contents.entries()) {
-        const Key = fileObj.Key;
-        console.log(`Downloading: ${Key}`);
-        try {
-            const fileData = yield s3.getObject({ Bucket: BUCKET, Key }).promise();
-            if (fileData.Body) {
-                const filePath = `./TempSavedVideo/file-${index}.webm`; //
-                paths.push(filePath);
-                fs_1.default.writeFileSync(filePath, fileData.Body);
-                console.log(`Saved to: ${filePath}`);
+const MergeAndUpload = () => __awaiter(void 0, void 0, void 0, function* () {
+    // Configure AWS
+    AWS.config.update({ region: "us-west-2" });
+    const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+    const BUCKET = "testbuket-s3-arn-1452555-xya";
+    const PREFIX = "test-folder-name-from-cli/";
+    s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        if (err) {
+            console.error("Error listing S3 objects:", err);
+            return;
+        }
+        const contents = ((_a = data.Contents) === null || _a === void 0 ? void 0 : _a.filter((item) => item.Key && item.Key !== PREFIX)) || [];
+        const paths = [];
+        createFolderAsync("TempSavedVideo"); /// If the Folder Doesn't Exist 
+        for (const [index, fileObj] of contents.entries()) {
+            const Key = fileObj.Key;
+            console.log(`Downloading: ${Key}`);
+            try {
+                const fileData = yield s3.getObject({ Bucket: BUCKET, Key }).promise();
+                if (fileData.Body) {
+                    const filePath = `./TempSavedVideo/file-${index}.webm`; //
+                    paths.push(filePath);
+                    fs_1.default.writeFileSync(filePath, fileData.Body);
+                    console.log(`Saved to: ${filePath}`);
+                }
+            }
+            catch (err) {
+                console.error(`Failed to download ${Key}:`, err);
             }
         }
-        catch (err) {
-            console.error(`Failed to download ${Key}:`, err);
-        }
+        let merged = (0, fluent_ffmpeg_1.default)();
+        paths.forEach(video => {
+            merged = merged.input(video);
+        });
+        merged
+            .on('error', (err) => console.error('Error:', err))
+            .on('end', () => {
+            console.log('Merging complete!');
+        })
+            .mergeToFile('output.mp4', './tmp');
+        console.log("Download complete.");
+    }));
+    /// Creating Folder Logic
+    function createFolderAsync(folderName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!fs_1.default.existsSync(folderName)) {
+                fs_1.default.mkdirSync(folderName);
+                console.log(`Folder '${folderName}' created successfully.`);
+            }
+            else {
+                fs_1.default.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
+                fs_1.default.mkdirSync(folderName);
+            }
+        });
     }
-    let merged = (0, fluent_ffmpeg_1.default)();
-    paths.forEach(video => {
-        merged = merged.input(video);
-    });
-    merged
-        .on('error', (err) => console.error('Error:', err))
-        .on('end', () => {
-        console.log('Merging complete!');
-    })
-        .mergeToFile('output.mp4', './tmp');
-    console.log("Download complete.");
-}));
-/// Creating Folder Logic
-function createFolderAsync(folderName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!fs_1.default.existsSync(folderName)) {
-            fs_1.default.mkdirSync(folderName);
-            console.log(`Folder '${folderName}' created successfully.`);
-        }
-        else {
-            fs_1.default.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
-            fs_1.default.mkdirSync(folderName);
-        }
-    });
-}
-function CleanUp(folderName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (fs_1.default.existsSync(folderName)) {
-            fs_1.default.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
-        }
-        if (fs_1.default.existsSync("output.mp4")) {
-            fs_1.default.unlinkSync("output.mp4");
-        }
-    });
-}
+    function CleanUp(folderName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (fs_1.default.existsSync(folderName)) {
+                fs_1.default.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
+            }
+            if (fs_1.default.existsSync("output.mp4")) {
+                fs_1.default.unlinkSync("output.mp4");
+            }
+        });
+    }
+});
