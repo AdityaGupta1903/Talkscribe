@@ -54,16 +54,19 @@ const multer_1 = __importDefault(require("multer"));
 const axios_1 = __importDefault(require("axios"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
+/// middlewares
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({ credentials: true, origin: true }));
 app.use((0, cookie_parser_1.default)());
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         cb(null, process.cwd() + "/tmp/my-uploads");
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const uniqueSuffix = Date.now();
         cb(null, file.fieldname + "-" + uniqueSuffix);
     },
 });
@@ -95,17 +98,13 @@ app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("vide
                 console.log("Buffer uploaded successfully:", data.Location);
             }
         });
-        res.status(200).send({ "data-received": "received" });
+        res.status(200).send({ "State": "Uploaded Successfully" });
     }
     catch (err) {
         console.log(err);
         res.status(500).send({ err: err });
     }
 }));
-app.get('/testcookie', middleware_1.CheckIfUserIsAuthenticated, (req, res) => {
-    console.log("User is Authenticated");
-    res.status(200).send("User is Authenticated");
-});
 app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let authCode = req.query.code;
@@ -160,6 +159,23 @@ app.get("/getUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* 
     catch (err) {
         console.log(err);
         res.status(500).send({ "err": err });
+    }
+}));
+app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    let { currentUID, remoteUID } = JSON.parse((_a = req.body) === null || _a === void 0 ? void 0 : _a.rec_details);
+    try {
+        let VideoId = yield (0, middleware_1.AddRecordingToDB)(currentUID, remoteUID);
+        if (VideoId != -1) {
+            res.status(200).send({ message: `Video saved with id ${VideoId}` });
+        }
+        else {
+            res.status(200).send({ message: `Failed to save video` });
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ err: err });
     }
 }));
 app.get('/getBucketName', middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

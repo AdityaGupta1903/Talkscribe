@@ -9,22 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.myQueue = void 0;
 const bullmq_1 = require("bullmq");
-exports.myQueue = new bullmq_1.Queue('foo', {
-    connection: {
-        host: "localhost",
-        port: 6379
-    }
-});
-function addJobs() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield exports.myQueue.add('myJobName', { foo: 'bar' });
-        yield exports.myQueue.add('myJobName', { qux: 'baz' });
-    });
-}
-// addJobs().then((res) => {
-//     console.log("res", res);
-// }).catch((err) => {
-//     console.log("err", err);
-// })
+// const connection = new IORedis({ host: "locahost", port: 6379, maxRetriesPerRequest: null });
+const myFirstWorker = new bullmq_1.Worker('foo', (job) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(job.data);
+}), { connection: { host: "localhost", port: 6379, maxRetriesPerRequest: null } });

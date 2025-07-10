@@ -124,7 +124,7 @@ function Call() {
                 }
                 formData.append("rec_details", JSON.stringify(RecordingDetails));
                 axios.post("http://localhost:3000/upload", formData, {
-                    withCredentials: true
+                    withCredentials: true,
                 });
                 recordedChunks = []
             };
@@ -182,8 +182,24 @@ function Call() {
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-            }} variant="outlined" onClick={() => {
+            }} variant="outlined" onClick={async () => {
                 startRecordingMergedCanvas(startRecording);
+                if (startRecording) {  // Signal Server to stop the recording
+                    const formData = new FormData();
+                    let RecordingDetails = {
+                        currentUID: currentUID,
+                        remoteUID: remoteUID
+                    }
+                    formData.append("rec_details", JSON.stringify(RecordingDetails));
+                    axios.post("http://localhost:3000/stoprecording", formData, {
+                        withCredentials: true,
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+
+                    })
+                }
+
             }}>{startRecording ? "Stop Recording" : "Start Recording"}</Button>
             {!remotePeerIdValue && (
                 <Box
