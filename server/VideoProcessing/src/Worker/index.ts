@@ -134,7 +134,8 @@ export const MergeAndUpload = async (BucketKey: string) => {
       let S3Upload = await s3.upload({
         Bucket: Bucket,
         Key: filename + ".mp4",
-        Body: filstream
+        Body: filstream,
+        ACL: "public-read"
       }).promise();
 
       console.log(S3Upload.Location)
