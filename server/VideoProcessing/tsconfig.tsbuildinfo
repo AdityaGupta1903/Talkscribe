@@ -1,1 +1,1 @@
-{"root":["./src/Queue/Consumer.ts","./src/Testing/index.ts","./src/Testing/testdb.ts","./src/db/lib/prisma.ts"],"version":"5.8.2"}
+{"root":["./src/Queue/Consumer.ts","./src/Testing/index.ts","./src/Testing/testupload.ts","./src/db/functions/index.ts","./src/db/lib/prisma.ts"],"version":"5.8.2"}

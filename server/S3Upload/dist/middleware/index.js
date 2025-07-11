@@ -119,7 +119,7 @@ const getCurrentRecordingSequence = (UID, RemoteUID) => __awaiter(void 0, void 0
     }
 });
 exports.getCurrentRecordingSequence = getCurrentRecordingSequence;
-const AddRecordingToDB = (UID, RemoteUID) => __awaiter(void 0, void 0, void 0, function* () {
+const AddRecordingToDB = (UID, RemoteUID, BucketKey) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let resp = yield prisma_1.default.recordings.create({
             data: {
@@ -130,7 +130,7 @@ const AddRecordingToDB = (UID, RemoteUID) => __awaiter(void 0, void 0, void 0, f
             }
         });
         if (resp) {
-            Queue_1.myQueue.add("ProcessVideo", { vid: resp.Id });
+            Queue_1.myQueue.add("ProcessVideo", { vid: resp.Id, BucketKey: BucketKey });
             return resp.Id;
         }
         else {
