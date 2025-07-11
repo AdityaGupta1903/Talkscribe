@@ -10,7 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bullmq_1 = require("bullmq");
+const Testing_1 = require("../Testing");
 // const connection = new IORedis({ host: "locahost", port: 6379, maxRetriesPerRequest: null });
 const myFirstWorker = new bullmq_1.Worker('foo', (job) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(job.data);
+    let { vid, BucketKey } = job.data;
+    yield (0, Testing_1.MergeAndUpload)(BucketKey);
 }), { connection: { host: "localhost", port: 6379, maxRetriesPerRequest: null } });

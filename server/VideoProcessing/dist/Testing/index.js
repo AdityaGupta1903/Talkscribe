@@ -45,23 +45,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MergeAndUpload = void 0;
 require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-const MergeAndUpload = () => __awaiter(void 0, void 0, void 0, function* () {
+const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function* () {
     // Configure AWS
     AWS.config.update({ region: "us-west-2" });
     const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
-    const BUCKET = "testbuket-s3-arn-1452555-xya";
-    const PREFIX = "test-folder-name-from-cli/";
+    const BUCKET = "talkscribe-buffer";
+    const PREFIX = BucketKey + "/";
     s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         if (err) {
             console.error("Error listing S3 objects:", err);
             return;
         }
-        const contents = ((_a = data.Contents) === null || _a === void 0 ? void 0 : _a.filter((item) => item.Key && item.Key !== PREFIX)) || [];
+        const contents = ((_a = data.Contents) === null || _a === void 0 ? void 0 : _a.filter((item) => item.Key && item.Key !== PREFIX)) || []; /// Fetches the Key
         const paths = [];
         createFolderAsync("TempSavedVideo"); /// If the Folder Doesn't Exist 
         for (const [index, fileObj] of contents.entries()) {
@@ -84,17 +85,64 @@ const MergeAndUpload = () => __awaiter(void 0, void 0, void 0, function* () {
         paths.forEach(video => {
             merged = merged.input(video);
         });
-        merged
-            .on('error', (err) => console.error('Error:', err))
-            .on('end', () => {
-            console.log('Merging complete!');
-        })
-            .mergeToFile('output.mp4', './tmp');
+        let promise = new Promise((res, rej) => {
+            merged
+                .on('error', (err) => console.error('Error:', err))
+                .on('end', () => {
+                console.log('Merging complete!');
+            })
+                .mergeToFile(`output.mp4`, './tmp');
+            res();
+        });
+        yield promise;
+        yield CleanUpS3Bucket(BucketKey, PREFIX);
         console.log("Download complete.");
     }));
-    /// Creating Folder Logic
+    const CleanUpS3Bucket = (BucketKey, Prefix) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            /// list down all S3 Bucket Keys
+            let ProcessDeleting = s3.listObjectsV2({ Bucket: BucketKey, Prefix: Prefix }, (err, list) => __awaiter(void 0, void 0, void 0, function* () {
+                var _a;
+                if (err) {
+                    console.error("Error listing S3 objects:", err);
+                    return;
+                }
+                let deletedKeys = [];
+                if ((_a = list.Contents) === null || _a === void 0 ? void 0 : _a.length) {
+                    for (let i = 0; i < list.Contents.length; i++) {
+                        let key = list.Contents[i].Key;
+                        if (key) {
+                            deletedKeys.push({ Key: key });
+                        }
+                    }
+                }
+                let deleteFromS3 = s3.deleteObjects({
+                    Bucket: BucketKey,
+                    Delete: {
+                        Objects: deletedKeys,
+                        Quiet: false
+                    }
+                }, (err, data) => {
+                    if (err) {
+                        console.log("Error In deleting the data");
+                        console.log(err);
+                    }
+                    console.log(data.Deleted);
+                }).promise();
+                yield deleteFromS3;
+            })).promise();
+            yield ProcessDeleting;
+        }
+        catch (err) {
+            console.log("Error in deleting the objects from the bucket", err);
+        }
+    });
+    /// Creating Folder Logic and CleanUp Last Video
     function createFolderAsync(folderName) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (fs_1.default.existsSync("output.mp4")) {
+                fs_1.default.unlinkSync("output.mp4");
+            }
             if (!fs_1.default.existsSync(folderName)) {
                 fs_1.default.mkdirSync(folderName);
                 console.log(`Folder '${folderName}' created successfully.`);
@@ -115,4 +163,21 @@ const MergeAndUpload = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         });
     }
+    function MergedVideo(Bucket, filepath, filename) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const filstream = fs_1.default.createReadStream(filepath);
+                let S3Upload = yield s3.upload({
+                    Bucket: Bucket,
+                    Key: filename + ".mp4",
+                    Body: filstream
+                }).promise();
+                console.log(S3Upload.Location);
+            }
+            catch (err) {
+                console.log("Error in Uploading the merged video", err);
+            }
+        });
+    }
 });
+exports.MergeAndUpload = MergeAndUpload;

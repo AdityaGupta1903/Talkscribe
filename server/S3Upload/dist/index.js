@@ -54,8 +54,8 @@ const multer_1 = __importDefault(require("multer"));
 const axios_1 = __importDefault(require("axios"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
-/// middlewares
 const app = (0, express_1.default)();
+/// middlewares 
 app.use((0, cors_1.default)({ credentials: true, origin: true }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
@@ -84,7 +84,7 @@ app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("vide
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
         console.log(req.file);
         const uploadParams = {
-            Bucket: "testbuket-s3-arn-1452555-xya",
+            Bucket: "talkscribe-buffer",
             Key: `${BucketKey}/${Date.now()}.mp4`,
             Body: filstream,
             ContentType: file === null || file === void 0 ? void 0 : file.mimetype, // optional but recommended
@@ -165,7 +165,9 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
     var _a;
     let { currentUID, remoteUID } = JSON.parse((_a = req.body) === null || _a === void 0 ? void 0 : _a.rec_details);
     try {
-        let VideoId = yield (0, middleware_1.AddRecordingToDB)(currentUID, remoteUID);
+        let getCurrentSequence = yield (0, middleware_1.getCurrentRecordingSequence)(currentUID, remoteUID);
+        let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence;
+        let VideoId = yield (0, middleware_1.AddRecordingToDB)(currentUID, remoteUID, BucketKey);
         if (VideoId != -1) {
             res.status(200).send({ message: `Video saved with id ${VideoId}` });
         }
@@ -177,8 +179,6 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
         console.log(err);
         res.status(500).send({ err: err });
     }
-}));
-app.get('/getBucketName', middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.listen(3000, () => {
     console.log("Server is Running on Port" + " " + 3000);

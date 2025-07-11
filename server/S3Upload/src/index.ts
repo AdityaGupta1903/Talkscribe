@@ -6,13 +6,12 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import * as BodyParser from "body-parser"
-
 import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
 
 
-/// middlewares
 const app = express();
+
+/// middlewares 
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use(express.json());
@@ -46,7 +45,7 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
     console.log(req.file);
 
     const uploadParams = {
-      Bucket: "testbuket-s3-arn-1452555-xya",
+      Bucket: "talkscribe-buffer",
       Key: `${BucketKey}/${Date.now()}.mp4`,
       Body: filstream,
       ContentType: file?.mimetype, // optional but recommended
@@ -133,7 +132,9 @@ app.get("/getUserId", async (req, res) => {
 app.post("/stoprecording", async (req, res) => {
   let { currentUID, remoteUID } = JSON.parse(req.body?.rec_details);
   try {
-    let VideoId = await AddRecordingToDB(currentUID, remoteUID);
+    let getCurrentSequence = await getCurrentRecordingSequence(currentUID, remoteUID);
+    let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence
+    let VideoId = await AddRecordingToDB(currentUID, remoteUID, BucketKey);
     if (VideoId != -1) {
       res.status(200).send({ message: `Video saved with id ${VideoId}` })
     }
@@ -147,9 +148,6 @@ app.post("/stoprecording", async (req, res) => {
   }
 })
 
-app.get('/getBucketName', CheckIfUserIsAuthenticated, async (req, res) => {
-
-})
 
 app.listen(3000, () => {
   console.log("Server is Running on Port" + " " + 3000);

@@ -105,7 +105,7 @@ export const getCurrentRecordingSequence = async (UID: string, RemoteUID: string
     }
 }
 
-export const AddRecordingToDB = async (UID: string, RemoteUID: string) => { /// When the stop recording is called
+export const AddRecordingToDB = async (UID: string, RemoteUID: string, BucketKey: string) => { /// When the stop recording is called
     try {
         let resp = await prisma.recordings.create({
             data: {
@@ -116,7 +116,7 @@ export const AddRecordingToDB = async (UID: string, RemoteUID: string) => { /// 
             }
         });
         if (resp) {
-            myQueue.add("ProcessVideo", { vid: resp.Id });
+            myQueue.add("ProcessVideo", { vid: resp.Id, BucketKey: BucketKey });
             return resp.Id;
         }
         else {
