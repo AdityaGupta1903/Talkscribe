@@ -2,14 +2,15 @@ import "dotenv/config";
 import * as AWS from "aws-sdk";
 import fs from "fs";
 import Ffmpeg from "fluent-ffmpeg";
+import { AddRecordingUrlToDb } from "../methods";
 
 
-export const MergeAndUpload = async (BucketKey: string) => {
+export const MergeAndUpload = async (BucketKey: string, vid: number) => {
   // Configure AWS
   AWS.config.update({ region: "us-west-2" });
   const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
-  const BUCKET = "talkscribe-buffer";
+  const BUCKET = process.env.S3MultiPartBucket!;
   const PREFIX = BucketKey + "/";
 
   s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, async (err, data) => {
@@ -43,19 +44,18 @@ export const MergeAndUpload = async (BucketKey: string) => {
       merged = merged.input(video);
     });
 
-    let MergetheVideo = new Promise<void>((res, rej) => {
-      merged
-        .on('error', (err: any) => console.error('Error:', err))
-        .on('end', () => {
+    const ffmpegPromise = () => {
+      return new Promise<void>((resolve, reject) => {
+        merged.on('error', (err: any) => console.error('Error:', err)).on('end', () => {
           console.log('Merging complete!');
-        })
-        .mergeToFile(`output.mp4`, './tmp')
-      res();
-    })
-    await MergetheVideo;
+        }).mergeToFile(`output.mp4`, './tmp').on("end", () => resolve()).on("error", (err) => reject());
+      })
+    };
+
+
+    await ffmpegPromise();
     await CleanUpS3Bucket(BucketKey, PREFIX); /// Clean the Multipart Chuncked Bucket
     await UploadMergedVideo(process.env.S3MergeUploadLoaction!, "./output.mp4", BucketKey); /// Upload the Single file to S3 Bucket
-
     console.log("Download complete.");
   });
 
@@ -63,7 +63,7 @@ export const MergeAndUpload = async (BucketKey: string) => {
   const CleanUpS3Bucket = async (BucketKey: string, Prefix: string) => {
     try {
       /// list down all S3 Bucket Keys
-      let ProcessDeleting = s3.listObjectsV2({ Bucket: BucketKey, Prefix: Prefix }, async (err, list) => {
+      let ProcessDeleting = s3.listObjectsV2({ Bucket: BUCKET, Prefix: Prefix }, async (err, list) => {
         if (err) {
           console.error("Error listing S3 objects:", err);
           return;
@@ -79,7 +79,7 @@ export const MergeAndUpload = async (BucketKey: string) => {
           }
         }
         let deleteFromS3 = s3.deleteObjects({
-          Bucket: BucketKey,
+          Bucket: BUCKET,
           Delete: {
             Objects: deletedKeys,
             Quiet: false
@@ -119,15 +119,6 @@ export const MergeAndUpload = async (BucketKey: string) => {
     }
   }
 
-  async function CleanUp(folderName: string) { /// call this method after uploading to AWS bucket.
-    if (fs.existsSync(folderName)) {
-      fs.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
-    }
-    if (fs.existsSync("output.mp4")) {
-      fs.unlinkSync("output.mp4")
-    }
-  }
-
   async function UploadMergedVideo(Bucket: string, filepath: string, filename: string) {
     try {
       const filstream = fs.createReadStream(filepath);
@@ -139,6 +130,9 @@ export const MergeAndUpload = async (BucketKey: string) => {
       }).promise();
 
       console.log(S3Upload.Location)
+
+      await AddRecordingUrlToDb(S3Upload.Location, vid)
+
     }
     catch (err) {
       console.log("Error in Uploading the merged video", err);

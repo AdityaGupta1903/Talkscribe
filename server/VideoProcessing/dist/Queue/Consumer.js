@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const bullmq_1 = require("bullmq");
 const Worker_1 = require("../Worker");
-const myFirstWorker = new bullmq_1.Worker('MergetheVideo', (job) => __awaiter(void 0, void 0, void 0, function* () {
+const myFirstWorker = new bullmq_1.Worker('MergeVideo', (job) => __awaiter(void 0, void 0, void 0, function* () {
     let { vid, BucketKey } = job.data;
-    yield (0, Worker_1.MergeAndUpload)(BucketKey);
+    yield (0, Worker_1.MergeAndUpload)(BucketKey, vid);
 }), { connection: { host: "localhost", port: 6379, maxRetriesPerRequest: null } });

@@ -180,6 +180,17 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).send({ err: err });
     }
 }));
+app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let UID = req.cookies.UID;
+        let UserRecordings = yield (0, middleware_1.getRecordings)(UID);
+        res.status(200).send({ "recordings": UserRecordings });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ "error": err });
+    }
+}));
 app.listen(3000, () => {
     console.log("Server is Running on Port" + " " + 3000);
 });

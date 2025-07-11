@@ -130,4 +130,30 @@ export const AddRecordingToDB = async (UID: string, RemoteUID: string, BucketKey
     }
 }
 
+export const getRecordings = async (UID: string) => {
+    try {
+        let user = await prisma.user.findUnique({
+            where: {
+                Id: UID
+            }
+        });
+        if (user) {
+            let recordings = await prisma.recordings.findMany({
+                where: {
+                    User: user
+                }
+            })
+            return recordings;
+        }
+        else {
+            return [];
+        }
+
+    }
+    catch (err) {
+        console.log(err);
+        return [];
+    }
+}
+
 

@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, Typography, Box, Container } from "@mui/material";
+import { useEffect } from "react";
 import VideoCallIcon from '@mui/icons-material/VideoCall';
+import { Controller } from "../api/function";
 
 const previousRecordings = [
   {
@@ -29,6 +31,9 @@ const CallSetup = () => {
   const handleStartVideo = () => {
     navigate("/call");
   };
+  useEffect(() => {
+    Controller.getRecordings();
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 8 }}>

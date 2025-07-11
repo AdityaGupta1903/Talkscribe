@@ -6,7 +6,7 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, verifyAndRetrieveUserEmail } from "./middleware";
+import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, getRecordings, verifyAndRetrieveUserEmail } from "./middleware";
 
 
 const app = express();
@@ -65,8 +65,6 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
     res.status(500).send({ err: err });
   }
 });
-
-
 
 app.get("/code", async (req, res) => {
   try {
@@ -145,6 +143,18 @@ app.post("/stoprecording", async (req, res) => {
   catch (err) {
     console.log(err);
     res.status(500).send({ err: err });
+  }
+})
+
+app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
+  try {
+    let UID = req.cookies.UID;
+    let UserRecordings = await getRecordings(UID);
+    res.status(200).send({ "recordings": UserRecordings })
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send({ "error": err });
   }
 })
 

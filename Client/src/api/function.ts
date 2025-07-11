@@ -26,4 +26,17 @@ export class Controller {
             return UID
         }
     }
+    public static async getRecordings() {
+        try {
+            let res = await axios.get("http://localhost:3000/getRecordings", {
+                withCredentials: true
+            })
+            console.log(res);
+            return res;
+        }
+        catch (err) {
+            console.log(err);
+            return [];
+        }
+    }
 }

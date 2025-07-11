@@ -50,11 +50,12 @@ require("dotenv/config");
 const AWS = __importStar(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function* () {
+const methods_1 = require("../methods");
+const MergeAndUpload = (BucketKey, vid) => __awaiter(void 0, void 0, void 0, function* () {
     // Configure AWS
     AWS.config.update({ region: "us-west-2" });
     const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
-    const BUCKET = "talkscribe-buffer";
+    const BUCKET = process.env.S3MultiPartBucket;
     const PREFIX = BucketKey + "/";
     s3.listObjectsV2({ Bucket: BUCKET, Prefix: PREFIX }, (err, data) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
@@ -85,16 +86,14 @@ const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function
         paths.forEach(video => {
             merged = merged.input(video);
         });
-        let MergetheVideo = new Promise((res, rej) => {
-            merged
-                .on('error', (err) => console.error('Error:', err))
-                .on('end', () => {
-                console.log('Merging complete!');
-            })
-                .mergeToFile(`output.mp4`, './tmp');
-            res();
-        });
-        yield MergetheVideo;
+        const ffmpegPromise = () => {
+            return new Promise((resolve, reject) => {
+                merged.on('error', (err) => console.error('Error:', err)).on('end', () => {
+                    console.log('Merging complete!');
+                }).mergeToFile(`output.mp4`, './tmp').on("end", () => resolve()).on("error", (err) => reject());
+            });
+        };
+        yield ffmpegPromise();
         yield CleanUpS3Bucket(BucketKey, PREFIX); /// Clean the Multipart Chuncked Bucket
         yield UploadMergedVideo(process.env.S3MergeUploadLoaction, "./output.mp4", BucketKey); /// Upload the Single file to S3 Bucket
         console.log("Download complete.");
@@ -102,7 +101,7 @@ const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function
     const CleanUpS3Bucket = (BucketKey, Prefix) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             /// list down all S3 Bucket Keys
-            let ProcessDeleting = s3.listObjectsV2({ Bucket: BucketKey, Prefix: Prefix }, (err, list) => __awaiter(void 0, void 0, void 0, function* () {
+            let ProcessDeleting = s3.listObjectsV2({ Bucket: BUCKET, Prefix: Prefix }, (err, list) => __awaiter(void 0, void 0, void 0, function* () {
                 var _a;
                 if (err) {
                     console.error("Error listing S3 objects:", err);
@@ -118,7 +117,7 @@ const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function
                     }
                 }
                 let deleteFromS3 = s3.deleteObjects({
-                    Bucket: BucketKey,
+                    Bucket: BUCKET,
                     Delete: {
                         Objects: deletedKeys,
                         Quiet: false
@@ -154,16 +153,6 @@ const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function
             }
         });
     }
-    function CleanUp(folderName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (fs_1.default.existsSync(folderName)) {
-                fs_1.default.rmdirSync(folderName, { recursive: true }); // delete the folder if exists and create the new one
-            }
-            if (fs_1.default.existsSync("output.mp4")) {
-                fs_1.default.unlinkSync("output.mp4");
-            }
-        });
-    }
     function UploadMergedVideo(Bucket, filepath, filename) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -175,6 +164,7 @@ const MergeAndUpload = (BucketKey) => __awaiter(void 0, void 0, void 0, function
                     ACL: "public-read"
                 }).promise();
                 console.log(S3Upload.Location);
+                yield (0, methods_1.AddRecordingUrlToDb)(S3Upload.Location, vid);
             }
             catch (err) {
                 console.log("Error in Uploading the merged video", err);
