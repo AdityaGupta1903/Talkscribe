@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AddRecordingToDB = exports.getCurrentRecordingSequence = exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
+exports.getRecordings = exports.AddRecordingToDB = exports.getCurrentRecordingSequence = exports.AddUserToDB = exports.verifyAndRetrieveUserEmail = void 0;
 exports.CheckIfUserIsAuthenticated = CheckIfUserIsAuthenticated;
 const google_auth_library_1 = require("google-auth-library");
 const prisma_1 = __importDefault(require("../db/lib/prisma"));
@@ -143,3 +143,28 @@ const AddRecordingToDB = (UID, RemoteUID, BucketKey) => __awaiter(void 0, void 0
     }
 });
 exports.AddRecordingToDB = AddRecordingToDB;
+const getRecordings = (UID) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let user = yield prisma_1.default.user.findUnique({
+            where: {
+                Id: UID
+            }
+        });
+        if (user) {
+            let recordings = yield prisma_1.default.recordings.findMany({
+                where: {
+                    User: user
+                }
+            });
+            return recordings;
+        }
+        else {
+            return [];
+        }
+    }
+    catch (err) {
+        console.log(err);
+        return [];
+    }
+});
+exports.getRecordings = getRecordings;

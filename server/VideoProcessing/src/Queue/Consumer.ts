@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { MergeAndUpload } from '../Worker';
 
-const myFirstWorker = new Worker('MergetheVideo', async (job) => {
+const myFirstWorker = new Worker('MergeVideo', async (job) => {
     let { vid, BucketKey } = job.data
-    await MergeAndUpload(BucketKey);
+    await MergeAndUpload(BucketKey, vid);
 }, { connection: { host: "localhost", port: 6379, maxRetriesPerRequest: null } })
