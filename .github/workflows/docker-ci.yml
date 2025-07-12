@@ -3,7 +3,7 @@ name: Docker CI pipeline for Talkscribe
 on:
   push:
     branches:
-    - Pipeline
+    - main
 
 jobs:
   deploy:
@@ -11,10 +11,10 @@ jobs:
     environment: production
 
     steps:
-    - name: Checkout Pipeline branch
+    - name: Checkout main branch
       uses: actions/checkout@v2
       with:
-        ref: Pipeline
+        ref: main
 
     - name: Set up SSH key
       run: |
