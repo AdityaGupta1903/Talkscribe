@@ -8,5 +8,6 @@ COPY ./package*.json ./
 COPY . .
 # Specify the command to run your application
 RUN npm install
+RUN apk add --no-cache ffmpeg
 
 CMD ["sh", "-c", "npm run db:deploy && npm run dev"]

@@ -27,11 +27,13 @@ services:
             - my-net
   s3upload:
     build:
-      context: ./S3Upload
+      context: ./server/S3Upload
       dockerfile: Dockerfile
     depends_on:
       - postgres
       - redis
+    env_file:
+        - .env
     ports:
       - "3000:3000"
     networks:
@@ -39,8 +41,10 @@ services:
     restart : always
   videoprocessing-worker:
     build:
-      context: ./VideoProcessing
+      context: ./server/VideoProcessing
       dockerfile: Dockerfile
+    env_file:
+        - .env  
     depends_on:
       - postgres
       - redis
