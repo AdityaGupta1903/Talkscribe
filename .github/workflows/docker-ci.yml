@@ -21,6 +21,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
+          git pull origin main
           ls
           cat <<EOF > .env
           AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}
