@@ -48,6 +48,6 @@ jobs:
           S3MultiPartBucket=${{ vars.S3MultiPartBucket }}
           EOF
           sudo docker-compose down
-          docker stop $(docker ps -a -q)
-          docker rm $(docker ps -a -q)
+          sudo docker stop $(docker ps -a -q)
+          sudo docker rm $(docker ps -a -q)
           sudo docker-compose up -d --build
