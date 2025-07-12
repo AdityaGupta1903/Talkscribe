@@ -22,6 +22,7 @@ jobs:
         port: 22
         script: |
           git clone https://github.com/AdityaGupta1903/Talkscribe.git
+          cd Talkscribe
           git checkout Pipeline
           ls
           cat <<EOF > .env
