@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - Pipeline
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,7 +14,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: SSH into EC2 instance
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Copy code to EC2 using scp
+      run: |
+        scp -i ~/.ssh/id_rsa -r ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app
+
+    - name: SSH into EC2 and run Docker commands
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -21,9 +33,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
-          git clone https://github.com/AdityaGupta1903/Talkscribe.git
-          cd Talkscribe
-          git checkout Pipeline
+          cd /home/${{ secrets.EC2_USERNAME }}/app
           ls
           cat <<EOF > .env
           AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}
