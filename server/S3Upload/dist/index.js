@@ -192,5 +192,6 @@ app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) =>
     }
 }));
 app.listen(3000, () => {
+    console.log(process.env.Client_URL);
     console.log("Server is Running on Port" + " " + 3000);
 });
