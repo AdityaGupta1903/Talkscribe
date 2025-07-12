@@ -1,0 +1,37 @@
+name: Docker CI pipeline for Talkscribe
+
+on:
+  push:
+    branches:
+    - Pipeline
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: SSH into EC2 instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          cd Talkscribe
+          cat <<EOF > .env
+          AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ vars.AWS_SECRET_ACCESS_KEY }}
+          client_id=${{ vars.client_id }}
+          client_secret=${{ vars.client_secret }}
+          redirect_uri=${{ vars.redirect_uri }}
+          DATABASE_URL=${{ vars.DATABASE_URL }}
+          Client_URL=${{ vars.Client_URL }}
+          S3MergeUploadLoaction=${{ vars.S3MergeUploadLoaction }}
+          S3MultiPartBucket=${{ vars.S3MultiPartBucket }}
+          EOF
+          docker-compose down
+          docker-compose up -d --build
