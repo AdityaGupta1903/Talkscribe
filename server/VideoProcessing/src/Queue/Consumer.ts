@@ -4,4 +4,4 @@ import { MergeAndUpload } from '../Worker';
 const myFirstWorker = new Worker('MergeVideo', async (job) => {
     let { vid, BucketKey } = job.data
     await MergeAndUpload(BucketKey, vid);
-}, { connection: { host: "localhost", port: 6379, maxRetriesPerRequest: null } })
+}, { connection: { host: "redis", port: 6379, maxRetriesPerRequest: null } })

@@ -19,7 +19,7 @@ export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: Ne
                 next();
             }
             else {
-                res.redirect("http://localhost:5173"); // redirect to login page
+                res.redirect(`${process.env.Client_URL}`); // redirect to login page
             }
         }
         catch (err) {

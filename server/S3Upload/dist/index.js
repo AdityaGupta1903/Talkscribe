@@ -131,7 +131,7 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
-            res.redirect("http://localhost:5173/video");
+            res.redirect(`${process.env.Client_URL}/video`);
         }
         else {
             let { UserEmail, UserName } = yield (0, middleware_1.verifyAndRetrieveUserEmail)(response.data.id_token);
@@ -141,11 +141,11 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
-            res.cookie("talkscribe_accessToken", response.data.id_token).redirect("http://localhost:5173/video");
+            res.cookie("talkscribe_accessToken", response.data.id_token).redirect(`${process.env.Client_URL}/video`);
         }
     }
     catch (err) {
-        res.status(500).redirect("http://localhost:5173/authError");
+        res.status(500).redirect(`${process.env.Client_URL}/authError`);
     }
 }));
 app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
