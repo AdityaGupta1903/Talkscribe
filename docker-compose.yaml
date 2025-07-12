@@ -41,7 +41,7 @@ services:
     restart : always
   videoprocessing-worker:
     build:
-      context: ./sever/VideoProcessing
+      context: ./server/VideoProcessing
       dockerfile: Dockerfile
     env_file:
       - .env  
