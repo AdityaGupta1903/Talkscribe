@@ -94,7 +94,7 @@ app.get("/code", async (req, res) => {
           res.cookie("UID", resp);
         }
       }
-      res.redirect("http://localhost:5173/video")
+      res.redirect(`${process.env.Client_URL}/video`)
     }
     else {
       let { UserEmail, UserName } = await verifyAndRetrieveUserEmail(response.data.id_token);
@@ -104,11 +104,11 @@ app.get("/code", async (req, res) => {
           res.cookie("UID", resp);
         }
       }
-      res.cookie("talkscribe_accessToken", response.data.id_token).redirect("http://localhost:5173/video");
+      res.cookie("talkscribe_accessToken", response.data.id_token).redirect(`${process.env.Client_URL}/video`);
     }
   }
   catch (err) {
-    res.status(500).redirect("http://localhost:5173/authError");
+    res.status(500).redirect(`${process.env.Client_URL}/authError`);
   }
 })
 
@@ -160,5 +160,6 @@ app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
 
 
 app.listen(3000, () => {
+  console.log(process.env.Client_URL)
   console.log("Server is Running on Port" + " " + 3000);
 });

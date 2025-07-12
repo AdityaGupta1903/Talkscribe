@@ -3,7 +3,7 @@ import { Queue } from 'bullmq';
 
 export const myQueue = new Queue('MergeVideo', {
     connection: {
-        host: "localhost",
+        host: "redis",
         port: 6379
     }
 });

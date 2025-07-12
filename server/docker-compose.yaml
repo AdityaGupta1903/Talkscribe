@@ -13,7 +13,7 @@ services:
       - POSTGRES_DB=test
     networks:
       - my-net  
-  my-redis-docker-service:
+  redis:
     image: redis:latest
     ports:
       - 6379:6379
@@ -25,6 +25,28 @@ services:
     command: ["redis-server"]
     networks:
             - my-net
+  s3upload:
+    build:
+      context: ./S3Upload
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "3000:3000"
+    networks:
+      - my-net
+    restart : always
+  videoprocessing-worker:
+    build:
+      context: ./VideoProcessing
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - my-net
+    restart : always 
 networks:
     my-net: 
-        
+      driver: bridge
