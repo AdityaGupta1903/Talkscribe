@@ -11,8 +11,10 @@ jobs:
     environment: production
 
     steps:
-    - name: Checkout code
+    - name: Checkout Pipeline branch
       uses: actions/checkout@v2
+      with:
+        ref: Pipeline
 
     - name: Set up SSH key
       run: |
@@ -25,7 +27,7 @@ jobs:
       run: |
         scp -i ~/.ssh/id_rsa -r ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app
 
-    - name: SSH into EC2 and run Docker commands
+    - name: SSH into EC2 and run Docker
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -34,7 +36,6 @@ jobs:
         port: 22
         script: |
           cd /home/${{ secrets.EC2_USERNAME }}/app
-          ls
           cat <<EOF > .env
           AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY=${{ vars.AWS_SECRET_ACCESS_KEY }}
