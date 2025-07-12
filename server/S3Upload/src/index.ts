@@ -146,6 +146,10 @@ app.post("/stoprecording", async (req, res) => {
   }
 })
 
+app.get("/ping", async (req, res) => { /// Just to test whether the server is running or not.
+  res.status(200).send({ message: "pong" })
+})
+
 app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
   try {
     let UID = req.cookies.UID;

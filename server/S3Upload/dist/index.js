@@ -180,6 +180,9 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).send({ err: err });
     }
 }));
+app.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.status(200).send({ message: "pong" });
+}));
 app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let UID = req.cookies.UID;
