@@ -21,7 +21,8 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
-          git pull origin main
+          git pull https://github.com/AdityaGupta1903/Talkscribe.git
+          git checkout Pipeline
           ls
           cat <<EOF > .env
           AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}
