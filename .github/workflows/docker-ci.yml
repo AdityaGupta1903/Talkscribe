@@ -47,6 +47,6 @@ jobs:
           S3MergeUploadLoaction=${{ vars.S3MergeUploadLoaction }}
           S3MultiPartBucket=${{ vars.S3MultiPartBucket }}
           EOF
-          sudo docker-compose down
-          sudo docker-compose up -d --build
+          sudo docker compose down
+          sudo docker compose up -d --build
           sudo docker system prune --all -f
