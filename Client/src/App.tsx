@@ -11,10 +11,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/video" element={<CallSetup />} />
-        <Route path="/call" element={<Call />} />
         <Route element={<ProtectedRoute />}>
-
+          <Route path="/video" element={<CallSetup />} />
+          <Route path="/call" element={<Call />} />
         </Route>
       </Routes>
     </BrowserRouter>
