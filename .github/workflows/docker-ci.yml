@@ -48,5 +48,5 @@ jobs:
           S3MultiPartBucket=${{ vars.S3MultiPartBucket }}
           EOF
           sudo docker-compose down
-          docker system prune --all
+          sudo docker system prune --all -f
           docker compose up --build --force-recreate
