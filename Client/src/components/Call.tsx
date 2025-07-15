@@ -133,7 +133,7 @@ function Call() {
                 mediaRecorder.stop();
                 mediaRecorder.start();
                 console.log(recordedChunks);
-            }, 10000);
+            }, 2000);
             //@ts-ignore
             setIntervalId(IntervalId);
             setStartRecoding(true);
