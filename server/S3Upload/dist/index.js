@@ -182,7 +182,7 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
 }));
 app.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("PING124");
-    res.status(200).send({ message: "pong-12455" });
+    res.status(200).send({ message: "pong-12455888" });
 }));
 app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
