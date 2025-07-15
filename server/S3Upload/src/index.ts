@@ -147,7 +147,7 @@ app.post("/stoprecording", async (req, res) => {
 })
 
 app.get("/ping", async (req, res) => { /// Just to test whether the server is running or not.
-  console.log("PING123")
+  console.log("PING124")
   res.status(200).send({ message: "pong-124" })
 })
 
