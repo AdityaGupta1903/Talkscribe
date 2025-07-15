@@ -23,6 +23,10 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+    - name: Copy code to EC2 using scp
+      run: |
+        scp -i ~/.ssh/id_rsa -r ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app
+
     - name: SSH into EC2 and run Docker
       uses: appleboy/ssh-action@master
       with:
