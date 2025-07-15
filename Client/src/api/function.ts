@@ -2,7 +2,7 @@ import axios from "axios";
 export class Controller {
     public static async isUserAuthenticated() {
         try {
-            let res = await axios.get("http://localhost:3000/loggedin", {
+            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/loggedin", {
                 withCredentials: true
             })
             console.log(res.data);
@@ -15,7 +15,7 @@ export class Controller {
     }
     public static async getUserId() {
         try {
-            let res = await axios.get("http://localhost:3000/getUserId", {
+            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/getUserId", {
                 withCredentials: true
             });
             return res.data.UID as string;
@@ -28,7 +28,7 @@ export class Controller {
     }
     public static async getRecordings() {
         try {
-            let res = await axios.get("http://localhost:3000/getRecordings", {
+            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/getRecordings", {
                 withCredentials: true
             })
             console.log(res);

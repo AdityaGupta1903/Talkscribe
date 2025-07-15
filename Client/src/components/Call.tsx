@@ -123,7 +123,7 @@ function Call() {
                     remoteUID: remoteUID
                 }
                 formData.append("rec_details", JSON.stringify(RecordingDetails));
-                axios.post("http://localhost:3000/upload", formData, {
+                axios.post("https://talkscribeaptapiv1.adityagupta.site/upload", formData, {
                     withCredentials: true,
                 });
                 recordedChunks = []
@@ -191,7 +191,7 @@ function Call() {
                         remoteUID: remoteUID
                     }
                     formData.append("rec_details", JSON.stringify(RecordingDetails));
-                    axios.post("http://localhost:3000/stoprecording", formData, {
+                    axios.post("https://talkscribeaptapiv1.adityagupta.site/stoprecording", formData, {
                         withCredentials: true,
                         headers: {
                             "Content-Type": "application/json"
