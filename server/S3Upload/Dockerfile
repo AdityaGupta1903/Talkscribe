@@ -12,6 +12,6 @@ COPY . .
 
 
 RUN npm install
-RUN tsc
+
 
 CMD ["sh", "-c", "npm run db:deploy && npm run dev"]

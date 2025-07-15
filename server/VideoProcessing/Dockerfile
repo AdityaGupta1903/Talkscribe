@@ -11,6 +11,6 @@ RUN npm install typescript -g
 RUN npm install
 RUN apk update
 RUN apk add ffmpeg
-RUN tsc
+
 
 CMD ["sh", "-c", "npm run db:deploy && npm run dev"]
