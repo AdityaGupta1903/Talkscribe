@@ -7,6 +7,7 @@ COPY ./package*.json ./
 # Install application dependencies
 COPY . .
 # Specify the command to run your application
+RUN npm install typescript -g
 RUN npm install
 RUN apk update
 RUN apk add ffmpeg

@@ -7,6 +7,7 @@ COPY ./package*.json ./
 # Install application dependencies
 COPY . .
 # Specify the command to run your application
+RUN npm install typescript -g
 RUN npm install
 
 CMD ["sh", "-c", "npm run db:deploy && npm run dev"]
