@@ -5,7 +5,5 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    allowedHosts: ["b493-2409-40c2-1013-e1e-7896-f4b2-1e7b-9452.ngrok-free.app"],
-  },
+  base: process.env.VITE_BASE_PATH || "/Talkscribe/tree/main/Client"
 });
