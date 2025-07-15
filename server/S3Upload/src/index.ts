@@ -12,19 +12,14 @@ import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRe
 const app = express();
 
 /// middlewares 
-app.use(cors({ credentials: true, origin: "https://talkscribe.vercel.app" }));
+app.use(cors({ credentials: true, origin: process.env.Client_URL }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-app.options("*", cors({
-  origin: "https://talkscribe.vercel.app",
-  credentials: true
-}));
-
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header("Access-Control-Allow-Origin", "https://talkscribe.vercel.app");
+  res.header("Access-Control-Allow-Origin", process.env.Client_URL);
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
@@ -160,7 +155,7 @@ app.post("/stoprecording", async (req, res) => {
 
 app.get("/ping", async (req, res) => { /// Just to test whether the server is running or not.
   console.log("PING124")
-  res.status(200).send({ message: "pong-12455888" })
+  res.status(200).send({ message: "pong-1245588877" })
 })
 
 app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
