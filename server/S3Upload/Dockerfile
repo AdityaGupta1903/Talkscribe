@@ -5,9 +5,13 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the container
 COPY ./package*.json ./
 # Install application dependencies
-COPY . .
+
 # Specify the command to run your application
 RUN npm install typescript -g
+COPY . .
+
+
 RUN npm install
+RUN tsc
 
 CMD ["sh", "-c", "npm run db:deploy && npm run dev"]
