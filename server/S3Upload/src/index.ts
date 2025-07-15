@@ -147,6 +147,7 @@ app.get("/code", async (req, res) => {
 })
 
 app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
+  createFolder("/tmp/my-uploads")
   res.status(200).send({ authenticated: true });
 })
 
@@ -200,6 +201,5 @@ app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
 
 app.listen(3000, () => {
   console.log(process.env.Client_URL)
-  createFolder("/tmp/my-uploads")
   console.log("Server is Running on Port" + " " + 3000);
 });

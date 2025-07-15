@@ -181,6 +181,7 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    createFolder("/tmp/my-uploads");
     res.status(200).send({ authenticated: true });
 }));
 app.get("/getUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -229,6 +230,5 @@ app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) =>
 }));
 app.listen(3000, () => {
     console.log(process.env.Client_URL);
-    createFolder("/tmp/my-uploads");
     console.log("Server is Running on Port" + " " + 3000);
 });
