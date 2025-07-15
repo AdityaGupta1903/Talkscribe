@@ -56,7 +56,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
 const app = (0, express_1.default)();
 /// middlewares 
-app.use((0, cors_1.default)({ credentials: true, origin: process.env.Client_URL }));
+app.use((0, cors_1.default)({ origin: process.env.Client_URL, credentials: true }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -136,6 +136,8 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
+            res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+            res.header("Access-Control-Allow-Credentials", "true");
             res.redirect(`${process.env.Client_URL}/video`);
         }
         else {
@@ -146,10 +148,14 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
+            res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+            res.header("Access-Control-Allow-Credentials", "true");
             res.cookie("talkscribe_accessToken", response.data.id_token).redirect(`${process.env.Client_URL}/video`);
         }
     }
     catch (err) {
+        res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+        res.header("Access-Control-Allow-Credentials", "true");
         res.status(500).redirect(`${process.env.Client_URL}/authError`);
     }
 }));

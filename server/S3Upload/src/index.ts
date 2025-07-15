@@ -12,7 +12,7 @@ import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRe
 const app = express();
 
 /// middlewares 
-app.use(cors({ credentials: true, origin: process.env.Client_URL }));
+app.use(cors({ origin: process.env.Client_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -101,6 +101,8 @@ app.get("/code", async (req, res) => {
           res.cookie("UID", resp);
         }
       }
+      res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+      res.header("Access-Control-Allow-Credentials", "true");
       res.redirect(`${process.env.Client_URL}/video`)
     }
     else {
@@ -111,10 +113,14 @@ app.get("/code", async (req, res) => {
           res.cookie("UID", resp);
         }
       }
+      res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+      res.header("Access-Control-Allow-Credentials", "true");
       res.cookie("talkscribe_accessToken", response.data.id_token).redirect(`${process.env.Client_URL}/video`);
     }
   }
   catch (err) {
+    res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+    res.header("Access-Control-Allow-Credentials", "true");
     res.status(500).redirect(`${process.env.Client_URL}/authError`);
   }
 })
