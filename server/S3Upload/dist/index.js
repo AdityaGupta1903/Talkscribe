@@ -56,7 +56,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
 const app = (0, express_1.default)();
 /// middlewares 
-app.use((0, cors_1.default)({ credentials: true, origin: process.env.Client_URL }));
+app.use((0, cors_1.default)({ credentials: true, origin: "https://talkscribe.vercel.app" }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));

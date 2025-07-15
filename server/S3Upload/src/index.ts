@@ -12,7 +12,7 @@ import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRe
 const app = express();
 
 /// middlewares 
-app.use(cors({ credentials: true, origin: process.env.Client_URL }));
+app.use(cors({ credentials: true, origin: "https://talkscribe.vercel.app" }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
