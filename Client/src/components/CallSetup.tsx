@@ -60,6 +60,7 @@ const CallSetup = () => {
     setSelectedId(id);
     setOpenDialog(true);
   };
+  console.log(selectedId);
 
   const handleDelete = async () => { // To implement this
     // if (selectedId === null) return;
