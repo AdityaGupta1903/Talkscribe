@@ -18,6 +18,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+app.options("*", cors({
+  origin: "https://talkscribe.vercel.app",
+  credentials: true
+}));
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header("Access-Control-Allow-Origin", "https://talkscribe.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+
 // Configuring to store the video online
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

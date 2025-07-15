@@ -60,6 +60,15 @@ app.use((0, cors_1.default)({ credentials: true, origin: "https://talkscribe.ver
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.options("*", (0, cors_1.default)({
+    origin: "https://talkscribe.vercel.app",
+    credentials: true
+}));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "https://talkscribe.vercel.app");
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
