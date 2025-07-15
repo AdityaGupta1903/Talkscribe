@@ -65,6 +65,31 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     next();
 });
+const createFolder = (folderName) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        fs_1.default.access(folderName, (error) => {
+            // To check if given directory 
+            // already exists or not
+            if (error) {
+                // If current directory does not exist then create it
+                fs_1.default.mkdir(folderName, { recursive: true }, (error) => {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log("New Directory created successfully !!");
+                    }
+                });
+            }
+            else {
+                console.log("Given Directory already exists !!");
+            }
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
@@ -136,8 +161,6 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
-            res.header("Access-Control-Allow-Origin", process.env.Client_URL);
-            res.header("Access-Control-Allow-Credentials", "true");
             res.redirect(`${process.env.Client_URL}/video`);
         }
         else {
@@ -148,8 +171,6 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     res.cookie("UID", resp);
                 }
             }
-            res.header("Access-Control-Allow-Origin", process.env.Client_URL);
-            res.header("Access-Control-Allow-Credentials", "true");
             res.cookie("talkscribe_accessToken", response.data.id_token).redirect(`${process.env.Client_URL}/video`);
         }
     }
@@ -208,5 +229,6 @@ app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) =>
 }));
 app.listen(3000, () => {
     console.log(process.env.Client_URL);
+    createFolder("/tmp/my-uploads");
     console.log("Server is Running on Port" + " " + 3000);
 });
