@@ -4,6 +4,13 @@ import prisma from "../db/lib/prisma";
 import axios from "axios";
 import { randomUUID } from "crypto";
 import { myQueue } from "../Queue";
+import * as AWS from "aws-sdk";
+
+
+
+/// Configuring AWS settings
+AWS.config.update({ region: "us-west-2" });
+let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
 export function CheckIfUserIsAuthenticated(req: Request, res: Response, next: NextFunction) {
     const accessToken = req.cookies?.talkscribe_accessToken;
@@ -59,6 +66,7 @@ export const verifyAndRetrieveUserEmail = async (idToken: string) => {
     const UserName = payload && payload["name"]
     return { UserEmail: UserEmail, UserName: UserName };
 }
+
 export const AddUserToDB = async (Email: string, UserName: string) => {
     try {
         let user = await prisma.user.findFirst({
@@ -153,6 +161,81 @@ export const getRecordings = async (UID: string) => {
     catch (err) {
         console.log(err);
         return [];
+    }
+}
+
+export const deleteRecording = async (BucketKey: string, Id: number) => {
+    try {
+
+        let deleteFromS3 = s3.deleteObject({
+            Bucket: process.env.S3MergeUploadLoaction!,
+            Key: BucketKey
+        }, async (err, data) => {
+            if (err) {
+                console.log("Error In deleting the data")
+                console.log(err)
+                return false;
+            }
+            else {
+                try {
+                    let deletevid = await prisma.recordings.delete({
+                        where: {
+                            Id: Id
+                        }
+                    })
+                    return true;
+                }
+                catch (err) {
+                    return false
+                }
+            }
+        }).promise();
+        await deleteFromS3
+        return true;
+    }
+    catch (err) {
+        return false;
+    }
+}
+
+export const CheckIfVideoAssociatedWithUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const accessToken = req.cookies?.talkscribe_accessToken;
+
+        let { Id, PublicUrl } = req.body
+        console.log(req.body);
+
+
+        verifyAndRetrieveUserEmail(accessToken).then(async ({ UserEmail, UserName }) => {
+            let transaction = await prisma.$transaction(async (tx) => {
+                let User = await tx.user.findUnique({
+                    where: {
+                        Email: UserEmail
+                    }
+                })
+                if (!User) {
+                    throw new Error(`User Doesn't Exists`)
+                }
+                let recording = await tx.recordings.findUnique({
+                    where: {
+                        Id: Id,
+                        User: User
+                    }
+                })
+                return recording;
+            })
+
+            if (transaction) {
+                next();
+            }
+            else {
+                res.send(500).send({ error: "Video Not Associated with the User" })
+            }
+        })
+    }
+    catch (err) {
+        console.log(err);
+
     }
 }
 

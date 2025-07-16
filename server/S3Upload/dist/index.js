@@ -87,7 +87,6 @@ app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("vide
         let getCurrentSequence = yield (0, middleware_1.getCurrentRecordingSequence)(currentUID, remoteUID);
         let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence;
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
-        console.log(req.file);
         const uploadParams = {
             Bucket: "talkscribe-buffer",
             Key: `${BucketKey}/${Date.now()}.mp4`,
@@ -124,9 +123,7 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 "Content-Type": "application/x-www-form-urlencoded"
             }
         });
-        console.log(response.data);
         if (response.data.refresh_token) {
-            console.log(response.data.refresh_token);
             res.cookie("talkscribe_accessToken", response.data.id_token);
             res.cookie("talkscribe_refresh_token", response.data.refresh_token);
             let { UserEmail, UserName } = yield (0, middleware_1.verifyAndRetrieveUserEmail)(response.data.id_token);
@@ -187,9 +184,28 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).send({ err: err });
     }
 }));
+app.post("/deleteRecording", middleware_1.CheckIfVideoAssociatedWithUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let { Id, PublicUrl } = req.body;
+        console.log();
+        let BucketKey = PublicUrl.split("//")[1].split("/")[1];
+        console.log("BucketKey", BucketKey);
+        let result = yield (0, middleware_1.deleteRecording)(BucketKey, Id);
+        if (result) {
+            res.status(200).send({ "message": "Video Deleted Successfully" });
+        }
+        else {
+            res.status(200).send({ "message": "Failed to delete the Video" });
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ err: err });
+    }
+}));
 app.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("PING124");
-    res.status(200).send({ message: "pong-1245588877" });
+    console.log("resp");
+    res.status(200).send({ message: "pong-9100" });
 }));
 app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -203,6 +219,5 @@ app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) =>
     }
 }));
 app.listen(3000, () => {
-    console.log(process.env.Client_URL);
-    console.log("Server is Running on Port" + " " + 3000);
+    console.log("Server is Running on Portttt" + " " + 3000);
 });

@@ -3,6 +3,7 @@ import Peer from "peerjs";
 import axios from "axios";
 import { Button, TextField, Box } from "@mui/material";
 import { Controller } from "../api/function";
+import { PROD_URL } from "../../contants";
 
 function Call() {
     const [peerId, setPeerId] = useState("");
@@ -123,7 +124,7 @@ function Call() {
                     remoteUID: remoteUID
                 }
                 formData.append("rec_details", JSON.stringify(RecordingDetails));
-                axios.post("https://talkscribeaptapiv1.adityagupta.site/upload", formData, {
+                axios.post(`${PROD_URL}/upload`, formData, {
                     withCredentials: true,
                 });
                 recordedChunks = []
@@ -192,7 +193,7 @@ function Call() {
                         remoteUID: remoteUID
                     }
                     formData.append("rec_details", JSON.stringify(RecordingDetails));
-                    axios.post("https://talkscribeaptapiv1.adityagupta.site/stoprecording", formData, {
+                    axios.post(`${PROD_URL}/stoprecording`, formData, {
                         withCredentials: true,
                         headers: {
                             "Content-Type": "application/json"

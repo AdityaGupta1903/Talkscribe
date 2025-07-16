@@ -31,6 +31,7 @@ const CallSetup = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [deleteVideoURL, setDeleteVideoURL] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", error: false });
 
@@ -56,24 +57,25 @@ const CallSetup = () => {
       });
   };
 
-  const confirmDelete = (id: number) => {
+  const confirmDelete = (id: number, VideoPublicURL: string) => {
     setSelectedId(id);
+    setDeleteVideoURL(VideoPublicURL)
     setOpenDialog(true);
   };
   console.log(selectedId);
 
   const handleDelete = async () => { // To implement this
-    // if (selectedId === null) return;
-    // try {
-    //   await Controller.deleteRecording(selectedId);
-    //   setRecordings((prev) => prev.filter((rec) => rec.Id !== selectedId));
-    //   setSnackbar({ open: true, message: "Recording deleted", error: false });
-    // } catch {
-    //   setSnackbar({ open: true, message: "Failed to delete", error: true });
-    // } finally {
-    //   setOpenDialog(false);
-    //   setSelectedId(null);
-    // }
+    if (selectedId === null || deleteVideoURL === null) return;
+    try {
+      await Controller.deleteRecording(selectedId, deleteVideoURL);
+      setRecordings((prev) => prev.filter((rec) => rec.Id !== selectedId));
+      setSnackbar({ open: true, message: "Recording deleted", error: false });
+    } catch {
+      setSnackbar({ open: true, message: "Failed to delete", error: true });
+    } finally {
+      setOpenDialog(false);
+      setSelectedId(null);
+    }
   };
 
   const filteredRecordings = recordings.filter(
@@ -157,7 +159,7 @@ const CallSetup = () => {
                       />
                     </CardContent>
                     <IconButton
-                      onClick={() => confirmDelete(rec.Id)}
+                      onClick={() => confirmDelete(rec.Id, rec.PublicUrl)}
                       sx={{
                         position: 'absolute',
                         top: 8,

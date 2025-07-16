@@ -1,8 +1,9 @@
 import axios from "axios";
+import { PROD_URL } from "../../contants";
 export class Controller {
     public static async isUserAuthenticated() {
         try {
-            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/loggedin", {
+            let res = await axios.get(`${PROD_URL}/loggedin`, {
                 withCredentials: true
             })
             console.log(res.data);
@@ -15,7 +16,7 @@ export class Controller {
     }
     public static async getUserId() {
         try {
-            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/getUserId", {
+            let res = await axios.get(`${PROD_URL}/getUserId`, {
                 withCredentials: true
             });
             return res.data.UID as string;
@@ -28,7 +29,7 @@ export class Controller {
     }
     public static async getRecordings() {
         try {
-            let res = await axios.get("https://talkscribeaptapiv1.adityagupta.site/getRecordings", {
+            let res = await axios.get(`${PROD_URL}/getRecordings`, {
                 withCredentials: true
             })
             console.log(res);
@@ -39,4 +40,21 @@ export class Controller {
             return [];
         }
     }
+    public static async deleteRecording(Id: number, PublicUrl: string) {
+        try {
+            let RecordingDetails = {
+                Id: Id,
+                PublicUrl: PublicUrl
+            }
+            let resp = await axios.post(`${PROD_URL}/deleteRecording`, RecordingDetails, {
+                withCredentials: true,
+            });
+            console.log(resp);
+        }
+        catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+
 }

@@ -6,7 +6,7 @@ import fs from "fs";
 import multer from "multer";
 import axios from "axios";
 import cookieParser from "cookie-parser"
-import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRecordingSequence, getRecordings, verifyAndRetrieveUserEmail } from "./middleware";
+import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, CheckIfVideoAssociatedWithUser, deleteRecording, getCurrentRecordingSequence, getRecordings, verifyAndRetrieveUserEmail } from "./middleware";
 
 
 const app = express();
@@ -51,7 +51,6 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
     let getCurrentSequence = await getCurrentRecordingSequence(currentUID, remoteUID);
     let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence
     const filstream = fs.createReadStream(file?.path!);
-    console.log(req.file);
 
     const uploadParams = {
       Bucket: "talkscribe-buffer",
@@ -91,9 +90,8 @@ app.get("/code", async (req, res) => {
         }
       }
     )
-    console.log(response.data);
+
     if (response.data.refresh_token) {
-      console.log(response.data.refresh_token)
       res.cookie("talkscribe_accessToken", response.data.id_token)
       res.cookie("talkscribe_refresh_token", response.data.refresh_token);
       let { UserEmail, UserName } = await verifyAndRetrieveUserEmail(response.data.id_token);
@@ -124,7 +122,7 @@ app.get("/code", async (req, res) => {
 })
 
 app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
- 
+
   res.status(200).send({ authenticated: true });
 })
 
@@ -158,9 +156,33 @@ app.post("/stoprecording", async (req, res) => {
   }
 })
 
+app.post("/deleteRecording", CheckIfVideoAssociatedWithUser, async (req, res) => {
+  try {
+
+    let { Id, PublicUrl } = req.body
+
+    console.log()
+
+
+    let BucketKey = PublicUrl.split("//")[1].split("/")[1];
+
+    let result = await deleteRecording(BucketKey, Id);
+
+    if (result) {
+      res.status(200).send({ "message": "Video Deleted Successfully" })
+    }
+    else {
+      res.status(200).send({ "message": "Failed to delete the Video" })
+    }
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send({ err: err });
+  }
+})
+
 app.get("/ping", async (req, res) => { /// Just to test whether the server is running or not.
-  console.log("PING124")
-  res.status(200).send({ message: "pong-1245588877" })
+  res.status(200).send({ message: "pong-9100" })
 })
 
 app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
@@ -177,6 +199,5 @@ app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {
 
 
 app.listen(3000, () => {
-  console.log(process.env.Client_URL)
-  console.log("Server is Running on Port" + " " + 3000);
+  console.log("Server is Running on Portttt" + " " + 3000);
 });
