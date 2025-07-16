@@ -65,31 +65,6 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     next();
 });
-const createFolder = (folderName) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        fs_1.default.access(folderName, (error) => {
-            // To check if given directory 
-            // already exists or not
-            if (error) {
-                // If current directory does not exist then create it
-                fs_1.default.mkdir(folderName, { recursive: true }, (error) => {
-                    if (error) {
-                        console.log(error);
-                    }
-                    else {
-                        console.log("New Directory created successfully !!");
-                    }
-                });
-            }
-            else {
-                console.log("Given Directory already exists !!");
-            }
-        });
-    }
-    catch (err) {
-        console.log(err);
-    }
-});
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
@@ -181,7 +156,6 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 app.get("/loggedin", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    createFolder("/tmp/my-uploads");
     res.status(200).send({ authenticated: true });
 }));
 app.get("/getUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
