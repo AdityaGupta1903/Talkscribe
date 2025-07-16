@@ -56,10 +56,15 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const middleware_1 = require("./middleware");
 const app = (0, express_1.default)();
 /// middlewares 
-app.use((0, cors_1.default)({ credentials: true, origin: true }));
+app.use((0, cors_1.default)({ origin: process.env.Client_URL, credentials: true }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
 // Configuring to store the video online
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
@@ -145,6 +150,8 @@ app.get("/code", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     catch (err) {
+        res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+        res.header("Access-Control-Allow-Credentials", "true");
         res.status(500).redirect(`${process.env.Client_URL}/authError`);
     }
 }));
@@ -182,7 +189,7 @@ app.post("/stoprecording", (req, res) => __awaiter(void 0, void 0, void 0, funct
 }));
 app.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("PING124");
-    res.status(200).send({ message: "pong-12455888" });
+    res.status(200).send({ message: "pong-1245588877" });
 }));
 app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

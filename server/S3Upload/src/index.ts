@@ -12,10 +12,19 @@ import { AddRecordingToDB, AddUserToDB, CheckIfUserIsAuthenticated, getCurrentRe
 const app = express();
 
 /// middlewares 
-app.use(cors({ credentials: true, origin: true }));
+app.use(cors({ origin: process.env.Client_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+
 
 
 // Configuring to store the video online
@@ -108,11 +117,14 @@ app.get("/code", async (req, res) => {
     }
   }
   catch (err) {
+    res.header("Access-Control-Allow-Origin", process.env.Client_URL);
+    res.header("Access-Control-Allow-Credentials", "true");
     res.status(500).redirect(`${process.env.Client_URL}/authError`);
   }
 })
 
 app.get("/loggedin", CheckIfUserIsAuthenticated, async (req, res) => {
+ 
   res.status(200).send({ authenticated: true });
 })
 
@@ -148,7 +160,7 @@ app.post("/stoprecording", async (req, res) => {
 
 app.get("/ping", async (req, res) => { /// Just to test whether the server is running or not.
   console.log("PING124")
-  res.status(200).send({ message: "pong-12455888" })
+  res.status(200).send({ message: "pong-1245588877" })
 })
 
 app.get("/getRecordings", CheckIfUserIsAuthenticated, async (req, res) => {

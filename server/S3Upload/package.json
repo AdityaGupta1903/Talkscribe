@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:deploy": "cd src/db && npx prisma migrate deploy && npx prisma generate",
-    "dev": "node dist/index.js"
+    "dev": "node dist/CreateFolderScript/create.js && node dist/index.js"
   },
   "keywords": [],
   "author": "",
