@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Typography, Box, Paper, Container, Grid, Card, CardContent } from '@mui/material';
+import { Button, Typography, Box, Container, Grid, Card, CardContent } from '@mui/material';
 import { motion } from 'framer-motion';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
 import SecurityIcon from '@mui/icons-material/Security';

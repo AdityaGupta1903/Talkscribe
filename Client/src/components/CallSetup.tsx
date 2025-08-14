@@ -16,9 +16,7 @@ import {
   DialogTitle,
   Snackbar,
   TextField,
-  Fab,
   Avatar,
-  Divider,
   Paper,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -93,9 +91,9 @@ const CallSetup = () => {
   );
 
   return (
-    <Box 
-      sx={{ 
-        minHeight: '100vh', 
+    <Box
+      sx={{
+        minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         py: 4,
         position: 'relative',
@@ -113,10 +111,10 @@ const CallSetup = () => {
     >
       <Container maxWidth="md">
         {/* Header Section */}
-        <Paper 
+        <Paper
           elevation={0}
-          sx={{ 
-            bgcolor: 'rgba(255,255,255,0.1)', 
+          sx={{
+            bgcolor: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: 4,
@@ -125,9 +123,9 @@ const CallSetup = () => {
             textAlign: 'center'
           }}
         >
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               color: 'white',
               fontWeight: 700,
               mb: 2,
@@ -136,9 +134,9 @@ const CallSetup = () => {
           >
             Video Call Dashboard
           </Typography>
-          <Typography 
-            variant="h6" 
-            sx={{ 
+          <Typography
+            variant="h6"
+            sx={{
               color: 'rgba(255,255,255,0.8)',
               fontWeight: 300,
               mb: 3
@@ -177,10 +175,10 @@ const CallSetup = () => {
         </Paper>
 
         {/* Recordings Section */}
-        <Paper 
+        <Paper
           elevation={0}
-          sx={{ 
-            bgcolor: 'rgba(255,255,255,0.1)', 
+          sx={{
+            bgcolor: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: 4,
@@ -188,9 +186,9 @@ const CallSetup = () => {
           }}
         >
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              sx={{
                 color: 'white',
                 fontWeight: 600,
                 display: 'flex',
@@ -201,9 +199,9 @@ const CallSetup = () => {
               <PlayCircleOutlineIcon />
               Previous Recordings
             </Typography>
-            <IconButton 
+            <IconButton
               onClick={fetchRecordings}
-              sx={{ 
+              sx={{
                 color: 'white',
                 bgcolor: 'rgba(255,255,255,0.1)',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
@@ -257,8 +255,8 @@ const CallSetup = () => {
               {filteredRecordings.length === 0 ? (
                 //@ts-ignore
                 <Grid item xs={12}>
-                  <Box 
-                    textAlign="center" 
+                  <Box
+                    textAlign="center"
                     py={6}
                     sx={{
                       bgcolor: 'rgba(255,255,255,0.05)',
@@ -279,15 +277,15 @@ const CallSetup = () => {
                 filteredRecordings.map((rec) => (
                   //@ts-ignore
                   <Grid item xs={12} sm={6} md={4} key={rec.Id}>
-                    <Card 
-                      sx={{ 
+                    <Card
+                      sx={{
                         position: 'relative',
                         bgcolor: 'rgba(255,255,255,0.1)',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255,255,255,0.2)',
                         borderRadius: 3,
                         transition: 'all 0.3s ease',
-                        '&:hover': { 
+                        '&:hover': {
                           transform: 'translateY(-4px)',
                           boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
                           bgcolor: 'rgba(255,255,255,0.15)',
@@ -323,20 +321,20 @@ const CallSetup = () => {
                         }}
                         onClick={() => window.open(rec.PublicUrl, '_blank')}
                       >
-                        <PlayCircleOutlineIcon 
+                        <PlayCircleOutlineIcon
                           className="play-icon"
-                          sx={{ 
+                          sx={{
                             fontSize: 50,
                             transition: 'transform 0.3s ease',
                             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-                          }} 
+                          }}
                         />
                       </CardMedia>
                       <CardContent sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
-                        <Typography 
-                          variant="subtitle1" 
-                          fontWeight="bold" 
-                          gutterBottom 
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          gutterBottom
                           noWrap
                           sx={{ color: 'white' }}
                         >
@@ -368,7 +366,7 @@ const CallSetup = () => {
                           backdropFilter: 'blur(10px)',
                           color: '#ff6b6b',
                           transition: 'all 0.3s ease',
-                          '&:hover': { 
+                          '&:hover': {
                             bgcolor: 'rgba(255,107,107,0.2)',
                             transform: 'scale(1.1)',
                           },
@@ -385,8 +383,8 @@ const CallSetup = () => {
         </Paper>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog 
-          open={openDialog} 
+        <Dialog
+          open={openDialog}
           onClose={() => setOpenDialog(false)}
           PaperProps={{
             sx: {
@@ -402,14 +400,14 @@ const CallSetup = () => {
             Are you sure you want to delete this recording?
           </DialogTitle>
           <DialogActions>
-            <Button 
+            <Button
               onClick={() => setOpenDialog(false)}
               sx={{ color: 'rgba(255,255,255,0.7)' }}
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleDelete} 
+            <Button
+              onClick={handleDelete}
               variant="contained"
               sx={{
                 bgcolor: '#ff6b6b',
@@ -433,7 +431,7 @@ const CallSetup = () => {
             </IconButton>
           }
           ContentProps={{
-            sx: { 
+            sx: {
               backgroundColor: snackbar.error ? '#d32f2f' : '#43a047',
               backdropFilter: 'blur(10px)',
             },
