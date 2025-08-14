@@ -52,10 +52,10 @@ const LandingPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <Typography 
-                            variant="h2" 
+                        <Typography
+                            variant="h2"
                             component="h1"
-                            sx={{ 
+                            sx={{
                                 fontWeight: 700,
                                 color: 'white',
                                 mb: 2,
@@ -72,9 +72,9 @@ const LandingPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.8 }}
                     >
-                        <Typography 
-                            variant="h5" 
-                            sx={{ 
+                        <Typography
+                            variant="h5"
+                            sx={{
                                 color: 'rgba(255,255,255,0.9)',
                                 mb: 4,
                                 fontWeight: 300,
@@ -91,8 +91,8 @@ const LandingPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6, duration: 0.8 }}
                     >
-                        <Button 
-                            variant="contained" 
+                        <Button
+                            variant="contained"
                             size="large"
                             startIcon={<VideoCallIcon />}
                             onClick={() => window.open(SSOURL)}
@@ -145,6 +145,7 @@ const LandingPage: React.FC = () => {
                             description: 'Share meeting links instantly and join with one click'
                         }
                     ].map((feature, index) => (
+                        //@ts-ignore
                         <Grid item xs={12} sm={6} md={3} key={index}>
                             <motion.div
                                 initial={{ opacity: 0, y: 30 }}
@@ -170,19 +171,19 @@ const LandingPage: React.FC = () => {
                                         <Box sx={{ color: 'white', mb: 2 }}>
                                             {feature.icon}
                                         </Box>
-                                        <Typography 
-                                            variant="h6" 
-                                            sx={{ 
-                                                color: 'white', 
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                color: 'white',
                                                 fontWeight: 600,
-                                                mb: 1 
+                                                mb: 1
                                             }}
                                         >
                                             {feature.title}
                                         </Typography>
-                                        <Typography 
-                                            variant="body2" 
-                                            sx={{ 
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
                                                 color: 'rgba(255,255,255,0.8)',
                                                 lineHeight: 1.6
                                             }}

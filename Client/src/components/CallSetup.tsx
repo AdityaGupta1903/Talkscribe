@@ -255,6 +255,7 @@ const CallSetup = () => {
           ) : (
             <Grid container spacing={3}>
               {filteredRecordings.length === 0 ? (
+                //@ts-ignore
                 <Grid item xs={12}>
                   <Box 
                     textAlign="center" 
