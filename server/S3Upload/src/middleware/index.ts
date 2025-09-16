@@ -8,7 +8,7 @@ import * as AWS from "aws-sdk";
 
 
 
-/// Configuring AWS settings
+/// Configuring AWS setting
 AWS.config.update({ region: "us-west-2" });
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
