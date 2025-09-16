@@ -189,7 +189,6 @@ app.post("/deleteRecording", middleware_1.CheckIfVideoAssociatedWithUser, (req, 
         let { Id, PublicUrl } = req.body;
         console.log();
         let BucketKey = PublicUrl.split("//")[1].split("/")[1];
-        console.log("BucketKey", BucketKey);
         let result = yield (0, middleware_1.deleteRecording)(BucketKey, Id);
         if (result) {
             res.status(200).send({ "message": "Video Deleted Successfully" });
@@ -204,7 +203,6 @@ app.post("/deleteRecording", middleware_1.CheckIfVideoAssociatedWithUser, (req, 
     }
 }));
 app.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("resp");
     res.status(200).send({ message: "pong-9100" });
 }));
 app.get("/getRecordings", middleware_1.CheckIfUserIsAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

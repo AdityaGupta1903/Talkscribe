@@ -59,7 +59,6 @@ export const MergeAndUpload = async (BucketKey: string, vid: number) => {
     console.log("Download complete.");
   });
 
-
   const CleanUpS3Bucket = async (BucketKey: string, Prefix: string) => {
     try {
       /// list down all S3 Bucket Keys
@@ -102,7 +101,6 @@ export const MergeAndUpload = async (BucketKey: string, vid: number) => {
       console.log("Error in deleting the objects from the bucket", err)
     }
   }
-
   /// Creating Folder Logic and CleanUp Last Video
   async function createFolderAsync(folderName: string) {
     if (fs.existsSync("output.mp4")) {

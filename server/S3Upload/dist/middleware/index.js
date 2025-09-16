@@ -53,7 +53,7 @@ const axios_1 = __importDefault(require("axios"));
 const crypto_1 = require("crypto");
 const Queue_1 = require("../Queue");
 const AWS = __importStar(require("aws-sdk"));
-/// Configuring AWS settings
+/// Configuring AWS setting
 AWS.config.update({ region: "us-west-2" });
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 function CheckIfUserIsAuthenticated(req, res, next) {
