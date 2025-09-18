@@ -90,7 +90,8 @@ app.get("/code", async (req, res) => {
         }
       }
     )
-
+    console.log("Auth Response")
+    console.log(response);
     if (response.data.refresh_token) {
       res.cookie("talkscribe_accessToken", response.data.id_token)
       res.cookie("talkscribe_refresh_token", response.data.refresh_token);
@@ -115,6 +116,7 @@ app.get("/code", async (req, res) => {
     }
   }
   catch (err) {
+    console.log(err);
     res.header("Access-Control-Allow-Origin", process.env.Client_URL);
     res.header("Access-Control-Allow-Credentials", "true");
     res.status(500).redirect(`${process.env.Client_URL}/authError`);
