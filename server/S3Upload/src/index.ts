@@ -53,7 +53,7 @@ app.post("/upload", CheckIfUserIsAuthenticated, upload.single("video"), async (r
     const filstream = fs.createReadStream(file?.path!);
 
     const uploadParams = {
-      Bucket: "talkscribe-buffer",
+      Bucket: process.env.S3MultiPartBucket ?? "",
       Key: `${BucketKey}/${Date.now()}.mp4`,
       Body: filstream,
       ContentType: file?.mimetype, // optional but recommended

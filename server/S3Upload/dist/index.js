@@ -80,7 +80,7 @@ const upload = (0, multer_1.default)({ storage: storage });
 AWS.config.update({ region: "us-west-2" });
 let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("video"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         const file = req.file;
         let { currentUID, remoteUID } = JSON.parse((_a = req.body) === null || _a === void 0 ? void 0 : _a.rec_details);
@@ -88,7 +88,7 @@ app.post("/upload", middleware_1.CheckIfUserIsAuthenticated, upload.single("vide
         let BucketKey = currentUID + ":" + remoteUID + "-" + getCurrentSequence;
         const filstream = fs_1.default.createReadStream(file === null || file === void 0 ? void 0 : file.path);
         const uploadParams = {
-            Bucket: "talkscribe-buffer",
+            Bucket: (_b = process.env.S3MultiPartBucket) !== null && _b !== void 0 ? _b : "",
             Key: `${BucketKey}/${Date.now()}.mp4`,
             Body: filstream,
             ContentType: file === null || file === void 0 ? void 0 : file.mimetype, // optional but recommended
